@@ -1,0 +1,366 @@
+// Crucible Prisma schema
+// Source of truth: ../IMPLEMENTATION_PLAN.md section 9.
+// Target DB: Postgres (Neon or Supabase). Do not switch to SQLite without
+// removing String[] columns and confirming Json semantics.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// -----------------------------------------------------------------------------
+// Workspace + Gmail + Suppression
+// -----------------------------------------------------------------------------
+
+model Workspace {
+  id        String   @id @default(uuid())
+  slug      String   @unique
+  name      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  offers           Offer[]
+  gmailConnections GmailConnection[]
+  suppression      SuppressionEntry[]
+}
+
+model GmailConnection {
+  id             String    @id @default(uuid())
+  workspaceId    String
+  workspace      Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  email          String
+  status         String    @default("disconnected") // disconnected | connected | revoked
+  accessToken    String?
+  refreshToken   String?
+  tokenExpiresAt DateTime?
+  scopes         String[]
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  @@unique([workspaceId, email])
+}
+
+model SuppressionEntry {
+  id          String    @id @default(uuid())
+  workspaceId String
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  email       String
+  reason      String // unsubscribe | hostile | bounce | manual
+  notes       String?
+  createdAt   DateTime  @default(now())
+
+  @@unique([workspaceId, email])
+}
+
+// -----------------------------------------------------------------------------
+// Offer + hypotheses
+// -----------------------------------------------------------------------------
+
+model Offer {
+  id              String    @id @default(uuid())
+  workspaceId     String
+  workspace       Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  rawFounderInput String
+  title           String
+  productSummary  String
+  icpGuess        String
+  likelyBuyer     String
+  likelyUser      String
+  champion        String
+  painClaim       String
+  proofPoint      String?
+  desiredCta      String
+  tone            String    @default("founder-led")
+  messageAngles   Json // string[]
+  riskyAssumptions Json // string[]
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  hypotheses ExperimentHypothesis[]
+  archetypes BuyerArchetype[]
+  prospects  Prospect[]
+  campaigns  Campaign[]
+}
+
+model ExperimentHypothesis {
+  id        String   @id @default(uuid())
+  offerId   String
+  offer     Offer    @relation(fields: [offerId], references: [id], onDelete: Cascade)
+  statement String
+  rationale String?
+  status    String   @default("active") // active | validated | refuted
+  createdAt DateTime @default(now())
+}
+
+// -----------------------------------------------------------------------------
+// Buyer archetypes (versioned)
+// -----------------------------------------------------------------------------
+
+model BuyerArchetype {
+  id              String                 @id @default(uuid())
+  offerId         String
+  offer           Offer                  @relation(fields: [offerId], references: [id], onDelete: Cascade)
+  name            String
+  activeVersionId String?                @unique
+  activeVersion   BuyerArchetypeVersion? @relation("ActiveVersion", fields: [activeVersionId], references: [id])
+  createdAt       DateTime               @default(now())
+  updatedAt       DateTime               @updatedAt
+
+  versions       BuyerArchetypeVersion[] @relation("ArchetypeVersions")
+  matches        ProspectMatch[]
+  personaUpdates PersonaUpdate[]
+
+  @@unique([offerId, name])
+}
+
+model BuyerArchetypeVersion {
+  id                       String         @id @default(uuid())
+  archetypeId              String
+  archetype                BuyerArchetype @relation("ArchetypeVersions", fields: [archetypeId], references: [id], onDelete: Cascade)
+  versionNumber            Int
+  segment                  String
+  role                     String
+  description              String
+  currentWorkflow          String?
+  painIntensity            Float // 0-1
+  buyingPower              String // low | medium | high
+  riskTolerance            String // low | medium | high
+  voiceStyle               String?
+  predictedReplyLikelihood Float
+  topObjection             String?
+  bestAngle                String?
+  confidence               Float
+  predictedObjections      Json // string[]
+  preferredAngles          Json // string[]
+  dislikedPhrases          Json // string[]
+  likelyReplyPatterns      Json // string[]
+  changeReason             String? // why this version was created
+  createdAt                DateTime       @default(now())
+
+  isActiveOn        BuyerArchetype? @relation("ActiveVersion")
+  fromUpdates       PersonaUpdate[] @relation("FromVersion")
+  toUpdates         PersonaUpdate[] @relation("ToVersion")
+
+  @@unique([archetypeId, versionNumber])
+}
+
+// -----------------------------------------------------------------------------
+// Prospects + matches
+// -----------------------------------------------------------------------------
+
+model Prospect {
+  id              String   @id @default(uuid())
+  offerId         String
+  offer           Offer    @relation(fields: [offerId], references: [id], onDelete: Cascade)
+  firstName       String
+  lastName        String
+  email           String
+  title           String
+  company         String
+  industry        String?
+  companySize     String?
+  notes           String?
+  trigger         String?
+  website         String?
+  linkedinSummary String?
+  createdAt       DateTime @default(now())
+
+  matches        ProspectMatch[]
+  outboundEmails OutboundEmail[]
+
+  @@unique([offerId, email])
+}
+
+model ProspectMatch {
+  id                       String         @id @default(uuid())
+  prospectId               String
+  prospect                 Prospect       @relation(fields: [prospectId], references: [id], onDelete: Cascade)
+  archetypeId              String
+  archetype                BuyerArchetype @relation(fields: [archetypeId], references: [id], onDelete: Cascade)
+  confidence               Float
+  reasoning                String
+  matchedSignals           Json // string[]
+  riskFlags                Json // string[]
+  // Preflight prediction (populated by /cohorts/:id/preflight)
+  predictedOutcome         String?
+  predictedObjection       String?
+  recommendedAngle         String?
+  predictedReplyLikelihood Float?
+  predictionConfidence     Float?
+  phrasesToUse             Json? // string[]
+  phrasesToAvoid           Json? // string[]
+  createdAt                DateTime       @default(now())
+  updatedAt                DateTime       @updatedAt
+
+  outboundEmails OutboundEmail[]
+
+  @@unique([prospectId, archetypeId])
+}
+
+// -----------------------------------------------------------------------------
+// Campaigns + cohorts + emails
+// -----------------------------------------------------------------------------
+
+model Campaign {
+  id        String   @id @default(uuid())
+  offerId   String
+  offer     Offer    @relation(fields: [offerId], references: [id], onDelete: Cascade)
+  name      String
+  status    String   @default("active") // active | paused | done
+  createdAt DateTime @default(now())
+
+  cohorts CampaignCohort[]
+}
+
+model CampaignCohort {
+  id           String   @id @default(uuid())
+  campaignId   String
+  campaign     Campaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  cohortNumber Int
+  status       String   @default("draft") // draft | predicted | sent | replies_in | calibrated
+  hypothesis   String?
+  notes        String?
+  createdAt    DateTime @default(now())
+
+  outboundEmails  OutboundEmail[]
+  calibrationRuns CalibrationRun[]
+  nextCohortPlans NextCohortPlan[] @relation("FromCohort")
+  generatedFromPlans NextCohortPlan[] @relation("ToCohort")
+
+  @@unique([campaignId, cohortNumber])
+}
+
+model OutboundEmail {
+  id                       String         @id @default(uuid())
+  cohortId                 String
+  cohort                   CampaignCohort @relation(fields: [cohortId], references: [id], onDelete: Cascade)
+  prospectId               String
+  prospect                 Prospect       @relation(fields: [prospectId], references: [id], onDelete: Cascade)
+  matchId                  String?
+  match                    ProspectMatch? @relation(fields: [matchId], references: [id])
+  hypothesis               String
+  angle                    String
+  subject                  String
+  body                     String
+  followUp1                String?
+  followUp2                String?
+  ctaText                  String
+  complianceFooter         String?
+  predictedReplyLikelihood Float
+  predictedObjection       String?
+  riskWarnings             Json // string[]
+  qualityScores            Json // EmailQualityScores
+  status                   String         @default("draft") // draft | approved | drafted_in_gmail | sent | replied | bounced
+  approvedAt               DateTime?
+  approvedBy               String?
+  gmailDraftId             String?
+  gmailMessageId           String?
+  gmailThreadId            String?
+  sentAt                   DateTime?
+  createdAt                DateTime       @default(now())
+  updatedAt                DateTime       @updatedAt
+
+  events EmailEvent[]
+  reply  ReplyAnalysis?
+}
+
+model EmailEvent {
+  id        String        @id @default(uuid())
+  emailId   String
+  email     OutboundEmail @relation(fields: [emailId], references: [id], onDelete: Cascade)
+  type      String // draft_created | sent | bounced | replied | unsubscribed | replay_imported
+  payload   Json?
+  createdAt DateTime      @default(now())
+}
+
+// -----------------------------------------------------------------------------
+// Replies + calibration + persona updates + next cohort plans
+// -----------------------------------------------------------------------------
+
+model ReplyAnalysis {
+  id                  String        @id @default(uuid())
+  emailId             String        @unique
+  email               OutboundEmail @relation(fields: [emailId], references: [id], onDelete: Cascade)
+  rawText             String
+  receivedAt          DateTime
+  senderEmail         String?
+  senderName          String?
+  source              String        @default("replay") // replay | gmail
+  outcome             String // taxonomy from spec
+  sentiment           String // positive | neutral | negative
+  objectionType       String?
+  funnelStage         String?
+  volunteeredInfo     Json // string[]
+  predictedWasCorrect Boolean
+  mismatchReason      String?
+  parserConfidence    Float
+  createdAt           DateTime      @default(now())
+}
+
+model CalibrationRun {
+  id                            String         @id @default(uuid())
+  cohortId                      String
+  cohort                        CampaignCohort @relation(fields: [cohortId], references: [id], onDelete: Cascade)
+  triggeredBy                   String // manual | threshold
+  sentCount                     Int
+  replyCount                    Int
+  predictionAccuracy            Float
+  unpredictedObjectionRate      Float
+  hostileOrUnsubscribeRate      Float
+  newObjectionClusterCount      Int
+  predictionAccuracyByArchetype Json
+  objectionConfusionMatrix      Json
+  anglePerformanceByArchetype   Json
+  ctaPerformance                Json
+  phrasesToAvoid                Json // string[]
+  newUnpredictedObjections      Json // string[]
+  summary                       String
+  createdAt                     DateTime       @default(now())
+
+  personaUpdates PersonaUpdate[]
+}
+
+model PersonaUpdate {
+  id                     String                @id @default(uuid())
+  calibrationRunId       String
+  calibrationRun         CalibrationRun        @relation(fields: [calibrationRunId], references: [id], onDelete: Cascade)
+  archetypeId            String
+  archetype              BuyerArchetype        @relation(fields: [archetypeId], references: [id], onDelete: Cascade)
+  fromVersionId          String
+  fromVersion            BuyerArchetypeVersion @relation("FromVersion", fields: [fromVersionId], references: [id])
+  toVersionId            String
+  toVersion              BuyerArchetypeVersion @relation("ToVersion", fields: [toVersionId], references: [id])
+  reason                 String
+  oldPredictions         Json
+  observedReality        Json
+  newPredictedObjections Json // string[]
+  newPreferredAngles     Json // string[]
+  phrasesToUse           Json // string[]
+  phrasesToAvoid         Json // string[]
+  confidenceAfter        Float
+  diffSummary            Json // { added: string[], removed: string[], downweighted: string[] }
+  createdAt              DateTime              @default(now())
+}
+
+model NextCohortPlan {
+  id                        String          @id @default(uuid())
+  fromCohortId              String
+  fromCohort                CampaignCohort  @relation("FromCohort", fields: [fromCohortId], references: [id], onDelete: Cascade)
+  toCohortId                String?
+  toCohort                  CampaignCohort? @relation("ToCohort", fields: [toCohortId], references: [id])
+  summary                   String
+  changesFromPreviousCohort Json // string[]
+  segmentsToDoubleDown      Json // string[]
+  segmentsToPause           Json // string[]
+  revisedMessageAngles      Json // string[]
+  newEmailTemplates         Json // [{ archetypeId, subject, body, hypothesis, angle }]
+  killCriterion             String
+  successMetric             String
+  beforeEmailExample        String?
+  afterEmailExample         String?
+  createdAt                 DateTime        @default(now())
+}
