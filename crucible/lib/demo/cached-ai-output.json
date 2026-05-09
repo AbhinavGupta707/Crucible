@@ -1,0 +1,457 @@
+{
+  "$schema": "https://crucible.local/schemas/cached-ai-output.json",
+  "description": "Cached structured outputs for the eight Crucible AI agents. Used when USE_CACHED_AI=true or when a live call fails schema validation. Keys match prompt names in lib/ai/prompts/.",
+  "hypothesis": {
+    "title": "Lossless follow-up for agencies",
+    "productSummary": "Crucible reads call notes and drafts personalized second-touch follow-ups so agency founders stop losing warm prospects between discovery calls and close.",
+    "icpGuess": "5-25 person agencies (marketing, design, ops) where the founder runs discovery calls and is the bottleneck on follow-ups.",
+    "likelyBuyer": "Agency founder or COO with budget authority and felt pain over lost warm leads.",
+    "likelyUser": "Founder, head of sales, or studio manager who runs discovery calls and is responsible for follow-up.",
+    "champion": "Studio manager or RevOps lead who feels the lost-revenue pain weekly.",
+    "painClaim": "Warm prospects go cold between the first call and the second touch because the founder is the bottleneck.",
+    "proofPoint": "Design partners report recovering 1-3 warm deals per month after wiring it into their existing call notes workflow.",
+    "desiredCta": "15-minute fit check",
+    "tone": "founder-led",
+    "messageAngles": [
+      "missed-revenue framing (cost of inaction)",
+      "implementation-light framing (drafts only, you approve)",
+      "pipeline recovery framing (recover warm deals already in motion)"
+    ],
+    "riskyAssumptions": [
+      "Agency owners frame the pain as missed revenue rather than time savings.",
+      "Buyers will accept a draft-first workflow over full automation.",
+      "Tool-fatigued operators care more about implementation cost than price."
+    ]
+  },
+  "personaSynthesizer": {
+    "archetypes": [
+      {
+        "name": "Overworked Agency Owner",
+        "segment": "Marketing or design agency, 5-15 people",
+        "role": "Founder / CEO",
+        "description": "Runs discovery calls personally and is the bottleneck on follow-up. Loses warm deals to slow second touches.",
+        "currentWorkflow": "Calls in calendar, notes in Notion or Google Docs, follow-ups manually drafted in Gmail when remembered.",
+        "painIntensity": 0.85,
+        "buyingPower": "high",
+        "riskTolerance": "medium",
+        "voiceStyle": "warm, direct, time-poor",
+        "predictedReplyLikelihood": 0.55,
+        "topObjection": "I'll forget to use it",
+        "bestAngle": "missed-revenue framing",
+        "confidence": 0.75,
+        "predictedObjections": ["adoption / habit", "trust in AI drafts", "another tool to learn"],
+        "preferredAngles": ["missed-revenue framing", "drafts you approve"],
+        "dislikedPhrases": ["AI automation platform", "10x your outbound", "fully automated"],
+        "likelyReplyPatterns": ["short, candid", "asks for a demo or a fit check", "names a specific lost deal"]
+      },
+      {
+        "name": "Skeptical Solo Consultant",
+        "segment": "Solo or 1-2 person outbound / strategy consultancy",
+        "role": "Independent consultant",
+        "description": "Treats outbound as a craft. Distrusts AI tools. Books from referrals and signature.",
+        "currentWorkflow": "Hand-written follow-ups, no automation, deliberate cadence.",
+        "painIntensity": 0.4,
+        "buyingPower": "medium",
+        "riskTolerance": "low",
+        "voiceStyle": "opinionated, terse",
+        "predictedReplyLikelihood": 0.2,
+        "topObjection": "AI ruins the craft",
+        "bestAngle": "drafts you approve, never auto-send",
+        "confidence": 0.7,
+        "predictedObjections": ["voice / authenticity", "AI generic phrasing", "I don't have this problem"],
+        "preferredAngles": ["draft-first, human-controlled", "voice preservation"],
+        "dislikedPhrases": ["personalized at scale", "AI-generated", "automation"],
+        "likelyReplyPatterns": ["polite pass", "long opinion in reply", "no_reply"]
+      },
+      {
+        "name": "Ops-Minded Studio Manager",
+        "segment": "Brand / design / product studio, 10-25 people",
+        "role": "Studio Manager / Head of Operations",
+        "description": "Optimizes the founder's day. Allergic to bloat. Wants clean workflow integration.",
+        "currentWorkflow": "Owns CRM hygiene and follow-up reminders for the founder. Has reduced tool count this year.",
+        "painIntensity": 0.75,
+        "buyingPower": "medium",
+        "riskTolerance": "medium",
+        "voiceStyle": "concise, process-oriented",
+        "predictedReplyLikelihood": 0.45,
+        "topObjection": "stack bloat",
+        "bestAngle": "replaces a workflow you already have",
+        "confidence": 0.7,
+        "predictedObjections": ["adds another tool", "integration overhead", "founder won't use it"],
+        "preferredAngles": ["one-evening setup", "drafts in your existing inbox"],
+        "dislikedPhrases": ["all-in-one platform", "transform your sales motion"],
+        "likelyReplyPatterns": ["asks integration questions", "asks for a one-pager"]
+      },
+      {
+        "name": "Growth-Focused Founder",
+        "segment": "Growth / demand gen agency, 10-25 people",
+        "role": "Founder or VP Growth",
+        "description": "Cares about pipeline metrics and revenue recovery. Buys when ROI is legible.",
+        "currentWorkflow": "HubSpot or similar CRM, sequenced follow-ups, but second-touch personalization is weak.",
+        "painIntensity": 0.7,
+        "buyingPower": "high",
+        "riskTolerance": "medium",
+        "voiceStyle": "metrics-led, direct",
+        "predictedReplyLikelihood": 0.5,
+        "topObjection": "where's the ROI evidence",
+        "bestAngle": "pipeline recovery (warm deals already in motion)",
+        "confidence": 0.7,
+        "predictedObjections": ["ROI proof", "fit with current CRM", "duplicate work with sequencer"],
+        "preferredAngles": ["pipeline recovery", "second-touch personalization"],
+        "dislikedPhrases": ["10x outbound", "magical AI"],
+        "likelyReplyPatterns": ["asks for case study", "asks about CRM integration"]
+      },
+      {
+        "name": "Tool-Fatigued Operator",
+        "segment": "Ops / RevOps at agency, 10-30 people",
+        "role": "COO / Head of Operations",
+        "description": "Has cancelled multiple SaaS subscriptions this year. Refuses new tools until current ones earn their keep.",
+        "currentWorkflow": "Slimmed-down stack; deliberate freeze on adding software.",
+        "painIntensity": 0.8,
+        "buyingPower": "medium",
+        "riskTolerance": "low",
+        "voiceStyle": "blunt, skeptical, cost-aware",
+        "predictedReplyLikelihood": 0.3,
+        "topObjection": "pricing / per-seat creep",
+        "bestAngle": "value beats price",
+        "confidence": 0.65,
+        "predictedObjections": ["pricing", "per-seat creep", "vendor sprawl"],
+        "preferredAngles": ["price transparency", "ROI in 30 days"],
+        "dislikedPhrases": ["platform", "all-in-one", "transform"],
+        "likelyReplyPatterns": ["asks about price up front", "compares to alternatives"]
+      },
+      {
+        "name": "Budget-Sensitive Operator",
+        "segment": "Performance / creative agency, 10-20 people",
+        "role": "Head of Sales or Marketing",
+        "description": "Strong cost discipline. Pushes back on per-seat pricing. Will buy if ROI is concrete.",
+        "currentWorkflow": "Lean stack. CFO has tightened software budgets.",
+        "painIntensity": 0.65,
+        "buyingPower": "medium",
+        "riskTolerance": "low",
+        "voiceStyle": "direct, cost-aware",
+        "predictedReplyLikelihood": 0.35,
+        "topObjection": "per-seat pricing",
+        "bestAngle": "flat pricing, concrete revenue recovered",
+        "confidence": 0.7,
+        "predictedObjections": ["per-seat pricing", "TCO unclear"],
+        "preferredAngles": ["flat pricing", "ROI math up front"],
+        "dislikedPhrases": ["enterprise tier", "talk to sales"],
+        "likelyReplyPatterns": ["asks for pricing immediately"]
+      },
+      {
+        "name": "Trust-First Buyer",
+        "segment": "Small studio / solo founder, 4-10 people",
+        "role": "Founder",
+        "description": "Wants human-in-the-loop. Allergic to anything that auto-sends. Won't try a tool without a clear approval workflow.",
+        "currentWorkflow": "Manual everything. Considers automation only if approval is mandatory.",
+        "painIntensity": 0.55,
+        "buyingPower": "medium",
+        "riskTolerance": "low",
+        "voiceStyle": "careful, principled",
+        "predictedReplyLikelihood": 0.4,
+        "topObjection": "auto-send risk",
+        "bestAngle": "draft-first, you approve",
+        "confidence": 0.75,
+        "predictedObjections": ["auto-send risk", "tone / voice", "compliance"],
+        "preferredAngles": ["drafts only", "human approval gating"],
+        "dislikedPhrases": ["fully automated", "set and forget"],
+        "likelyReplyPatterns": ["asks 'does it ever auto-send?'", "asks about approval flow"]
+      },
+      {
+        "name": "Wrong-Person Gatekeeper",
+        "segment": "EAs / coordinators at larger agencies, 20-50 people",
+        "role": "Executive Assistant / Coordinator",
+        "description": "Forwards or filters vendor outreach. Will redirect if relevance is obvious.",
+        "currentWorkflow": "Manages the founder's inbox. Triage and forward.",
+        "painIntensity": 0.1,
+        "buyingPower": "low",
+        "riskTolerance": "medium",
+        "voiceStyle": "polite, brief",
+        "predictedReplyLikelihood": 0.45,
+        "topObjection": "wrong person",
+        "bestAngle": "make redirection easy",
+        "confidence": 0.85,
+        "predictedObjections": ["I'm not the buyer"],
+        "preferredAngles": ["clear ask, easy to forward"],
+        "dislikedPhrases": ["just looping you in", "thought you'd be the right person"],
+        "likelyReplyPatterns": ["forwards to actual owner", "polite redirect"]
+      },
+      {
+        "name": "Competitor-Locked Buyer",
+        "segment": "Performance agency, 15-30 people",
+        "role": "Head of Growth or Marketing",
+        "description": "Already paying for a competing solution. Under contract. Open to evaluating only on renewal.",
+        "currentWorkflow": "Established outbound stack with multi-month contract.",
+        "painIntensity": 0.4,
+        "buyingPower": "high",
+        "riskTolerance": "low",
+        "voiceStyle": "polite, transactional",
+        "predictedReplyLikelihood": 0.25,
+        "topObjection": "contract lock-in",
+        "bestAngle": "ping at renewal; differentiation note",
+        "confidence": 0.7,
+        "predictedObjections": ["under contract", "switching cost"],
+        "preferredAngles": ["renewal-window framing", "switching-light onboarding"],
+        "dislikedPhrases": ["rip and replace"],
+        "likelyReplyPatterns": ["polite no", "asks renewal date", "competitor_locked"]
+      },
+      {
+        "name": "Interested-But-Later Buyer",
+        "segment": "Growth or RevOps at agency, 15-30 people",
+        "role": "Director of Marketing or Marketing Ops",
+        "description": "Plans on quarterly cycles. Says yes-in-principle but parks until next planning window.",
+        "currentWorkflow": "Quarterly OKRs; budget freezes between cycles.",
+        "painIntensity": 0.55,
+        "buyingPower": "medium",
+        "riskTolerance": "medium",
+        "voiceStyle": "warm, calendar-driven",
+        "predictedReplyLikelihood": 0.5,
+        "topObjection": "timing / planning cycle",
+        "bestAngle": "low-cost pilot now, decide at next planning",
+        "confidence": 0.7,
+        "predictedObjections": ["timing", "Q-end freeze"],
+        "preferredAngles": ["pilot now, decide later", "small-scope first cohort"],
+        "dislikedPhrases": ["right now", "this quarter"],
+        "likelyReplyPatterns": ["interested_later", "asks for nurture or re-ping"]
+      }
+    ]
+  },
+  "prospectMatcher": {
+    "matches": [
+      { "prospectEmail": "maya@northrowagency.com",  "archetypeName": "Overworked Agency Owner",   "confidence": 0.92, "matchedSignals": ["founder runs discovery calls", "publicly named lost deals"], "riskFlags": [] },
+      { "prospectEmail": "daniel@spruce-studio.co",  "archetypeName": "Ops-Minded Studio Manager", "confidence": 0.78, "matchedSignals": ["recently hired ops lead", "panel quote about follow-up gap"], "riskFlags": [] },
+      { "prospectEmail": "priya@altitude.partners", "archetypeName": "Ops-Minded Studio Manager", "confidence": 0.74, "matchedSignals": ["RevOps coordinator job posting", "tool fatigue mentioned"], "riskFlags": ["weak fit for buyer authority"] },
+      { "prospectEmail": "theo@helmoutbound.com",    "archetypeName": "Skeptical Solo Consultant", "confidence": 0.95, "matchedSignals": ["Substack post distrusting AI sales tools"], "riskFlags": ["ideological mismatch"] },
+      { "prospectEmail": "hana@formfactor.co",       "archetypeName": "Ops-Minded Studio Manager", "confidence": 0.82, "matchedSignals": ["cancelled 3 SaaS in a week", "PM background"], "riskFlags": [] },
+      { "prospectEmail": "liam@northbankcreative.com", "archetypeName": "Overworked Agency Owner", "confidence": 0.86, "matchedSignals": ["Slack post asking about systemizing follow-ups"], "riskFlags": [] },
+      { "prospectEmail": "zara@cohortlabs.io",       "archetypeName": "Growth-Focused Founder",    "confidence": 0.81, "matchedSignals": ["OKR doc names follow-up as #1 leak"], "riskFlags": [] },
+      { "prospectEmail": "marcus@verdant-ops.com",   "archetypeName": "Tool-Fatigued Operator",    "confidence": 0.9,  "matchedSignals": ["LinkedIn post on AI tools losing him", "demands approve-before-send"], "riskFlags": [] },
+      { "prospectEmail": "aisling@deltabranch.co",   "archetypeName": "Tool-Fatigued Operator",    "confidence": 0.88, "matchedSignals": ["thread comment on tool graveyard", "no new tools without retiring one"], "riskFlags": [] },
+      { "prospectEmail": "jonas@quietcraftstudio.com", "archetypeName": "Trust-First Buyer",       "confidence": 0.7,  "matchedSignals": ["technical founder, build-not-buy reflex"], "riskFlags": ["may DIY"] },
+      { "prospectEmail": "renee@stackmotive.co",     "archetypeName": "Trust-First Buyer",         "confidence": 0.83, "matchedSignals": ["talk on human-in-the-loop", "drafts only rule"], "riskFlags": [] },
+      { "prospectEmail": "eli@brightaxis.io",        "archetypeName": "Growth-Focused Founder",    "confidence": 0.79, "matchedSignals": ["recent HubSpot migration", "VP Marketing"], "riskFlags": [] },
+      { "prospectEmail": "sofia@laneeleven.com",     "archetypeName": "Overworked Agency Owner",   "confidence": 0.93, "matchedSignals": ["self-named second-follow-up bottleneck"], "riskFlags": [] },
+      { "prospectEmail": "tomasz@signalboost.studio","archetypeName": "Tool-Fatigued Operator",    "confidence": 0.87, "matchedSignals": ["abandoned 3 tools last year", "Notion doc 'tools that didn't stick'"], "riskFlags": [] },
+      { "prospectEmail": "hannah@frontline-mark.com","archetypeName": "Wrong-Person Gatekeeper",   "confidence": 0.95, "matchedSignals": ["EA title", "calendar gatekeeping role"], "riskFlags": ["not the buyer"] },
+      { "prospectEmail": "owen@mintbridge.studio",   "archetypeName": "Competitor-Locked Buyer",   "confidence": 0.84, "matchedSignals": ["public praise of current outbound stack"], "riskFlags": ["under contract"] },
+      { "prospectEmail": "camille@parallel-grow.co", "archetypeName": "Interested-But-Later Buyer","confidence": 0.86, "matchedSignals": ["Q3 planning announced", "budget freeze"], "riskFlags": ["quarterly timing"] },
+      { "prospectEmail": "imani@laddercreative.com", "archetypeName": "Budget-Sensitive Operator", "confidence": 0.81, "matchedSignals": ["AMA quote on doing more with less"], "riskFlags": [] },
+      { "prospectEmail": "felix@cinderblock-co.com", "archetypeName": "Trust-First Buyer",         "confidence": 0.8,  "matchedSignals": ["thread on automation that earns trust slowly"], "riskFlags": [] },
+      { "prospectEmail": "noor@oakbridgestudios.com","archetypeName": "Tool-Fatigued Operator",    "confidence": 0.91, "matchedSignals": ["explicit tool freeze in all-hands deck"], "riskFlags": [] },
+      { "prospectEmail": "greta@piercehill.agency",  "archetypeName": "Overworked Agency Owner",   "confidence": 0.78, "matchedSignals": ["managing partner runs sales personally"], "riskFlags": [] },
+      { "prospectEmail": "cyrus@beaconmarket.co",    "archetypeName": "Overworked Agency Owner",   "confidence": 0.75, "matchedSignals": ["solo seller, too busy to follow up"], "riskFlags": [] },
+      { "prospectEmail": "adira@stratamotive.co",    "archetypeName": "Ops-Minded Studio Manager", "confidence": 0.72, "matchedSignals": ["recent vendor switch"], "riskFlags": ["slow approver"] },
+      { "prospectEmail": "brandon@pivotal-arc.io",   "archetypeName": "Competitor-Locked Buyer",   "confidence": 0.93, "matchedSignals": ["public case study with competitor", "12-month contract"], "riskFlags": ["locked"] },
+      { "prospectEmail": "maeve@linchpinstudio.com", "archetypeName": "Interested-But-Later Buyer","confidence": 0.85, "matchedSignals": ["recap email saying revisit in 6-8 weeks"], "riskFlags": [] }
+    ]
+  },
+  "preflightSimulator": {
+    "predictions": {
+      "maya@northrowagency.com":   { "predictedOutcome": "positive",          "predictedObjection": "adoption / habit",   "recommendedAngle": "missed-revenue framing",      "phrasesToUse": ["lost warm deals"],         "phrasesToAvoid": ["AI automation"],   "predictedReplyLikelihood": 0.62, "confidence": 0.75 },
+      "marcus@verdant-ops.com":    { "predictedOutcome": "pricing_objection", "predictedObjection": "pricing",            "recommendedAngle": "value beats price",           "phrasesToUse": ["price transparency"],      "phrasesToAvoid": ["platform"],        "predictedReplyLikelihood": 0.34, "confidence": 0.6 },
+      "aisling@deltabranch.co":    { "predictedOutcome": "pricing_objection", "predictedObjection": "pricing",            "recommendedAngle": "value beats price",           "phrasesToUse": ["flat pricing"],            "phrasesToAvoid": ["platform"],        "predictedReplyLikelihood": 0.32, "confidence": 0.58 },
+      "tomasz@signalboost.studio": { "predictedOutcome": "pricing_objection", "predictedObjection": "pricing",            "recommendedAngle": "value beats price",           "phrasesToUse": ["transparent price"],       "phrasesToAvoid": ["all-in-one"],      "predictedReplyLikelihood": 0.3,  "confidence": 0.55 },
+      "sofia@laneeleven.com":      { "predictedOutcome": "positive",          "predictedObjection": "adoption / habit",   "recommendedAngle": "missed-revenue framing",      "phrasesToUse": ["second follow-up"],        "phrasesToAvoid": ["AI automation"],   "predictedReplyLikelihood": 0.6,  "confidence": 0.75 },
+      "hannah@frontline-mark.com": { "predictedOutcome": "wrong_person",      "predictedObjection": "I'm not the buyer",  "recommendedAngle": "easy redirect",               "phrasesToUse": ["if you're not the right person"], "phrasesToAvoid": ["I think you're the right person"], "predictedReplyLikelihood": 0.45, "confidence": 0.85 },
+      "camille@parallel-grow.co":  { "predictedOutcome": "interested_later",  "predictedObjection": "timing / planning",  "recommendedAngle": "pilot now, decide at planning","phrasesToUse": ["small first cohort"],     "phrasesToAvoid": ["this quarter"],    "predictedReplyLikelihood": 0.5,  "confidence": 0.7 }
+    }
+  },
+  "outreachGenerator": {
+    "emails": [
+      {
+        "prospectEmail": "maya@northrowagency.com",
+        "hypothesis": "Agency owners respond to missed-revenue framing more than AI automation framing.",
+        "angle": "missed-revenue framing",
+        "subject": "the warm deals you lost last month",
+        "body": "Maya - saw your post about losing two warm deals on the second touch. That's the exact gap we built for. Crucible reads your call notes and drafts the second follow-up; you approve before anything sends. No new dashboard, just a draft in your inbox. Open to a 15-min fit check next week to see if it would have caught those two? - happy to walk away if it's not a fit.",
+        "followUp1": "Maya - bumping in case the first slipped. One question: which deal felt most preventable? That's usually the best test case for a fit check.",
+        "followUp2": "Last note from me - if the second follow-up isn't your bottleneck I'll stop. If it is, the fit check is 15 minutes and you'll know in 5.",
+        "ctaText": "15-min fit check next week",
+        "complianceFooter": "If this isn't a fit, reply 'no' and I won't follow up.",
+        "predictedReplyLikelihood": 0.62,
+        "predictedObjection": "adoption / habit",
+        "riskWarnings": []
+      },
+      {
+        "prospectEmail": "marcus@verdant-ops.com",
+        "hypothesis": "Tool-fatigued operators object on price first; lead with transparent pricing.",
+        "angle": "value beats price",
+        "subject": "transparent pricing for your follow-up workflow",
+        "body": "Marcus - read your post on AI tools losing you. We charge a flat per-workspace fee, no per-seat creep, and we draft only - you approve before anything sends. No new dashboard, plugs into your existing call notes. Open to a 15-min fit check to see if the price math works for Verdant?",
+        "followUp1": "Marcus - quick bump. The flat-rate piece tends to be the dealbreaker in this category, so I want to make sure that part is clear before we talk.",
+        "followUp2": "Closing the loop - if pricing isn't the issue I'd love to hear what is. Either way, last note from me.",
+        "ctaText": "15-min fit check",
+        "complianceFooter": "If this isn't a fit, reply 'no' and I won't follow up.",
+        "predictedReplyLikelihood": 0.34,
+        "predictedObjection": "pricing",
+        "riskWarnings": ["pricing-first framing may miss the real objection"]
+      },
+      {
+        "prospectEmail": "aisling@deltabranch.co",
+        "hypothesis": "Tool-fatigued operators object on price first; lead with transparent pricing.",
+        "angle": "value beats price",
+        "subject": "flat pricing, no per-seat creep",
+        "body": "Aisling - saw the thread on tool graveyards. Crucible is a flat per-workspace fee, drafts only, you approve everything before send. No new dashboard. Worth a 15-min fit check to see if the price math holds up against your current stack?",
+        "followUp1": "Aisling - bumping once. The flat-rate detail is the part most ops folks want clear up front.",
+        "followUp2": "Last bump from me. If the pricing isn't the blocker I'd love to know what is.",
+        "ctaText": "15-min fit check",
+        "complianceFooter": "If this isn't a fit, reply 'no' and I won't follow up.",
+        "predictedReplyLikelihood": 0.32,
+        "predictedObjection": "pricing",
+        "riskWarnings": ["pricing-first framing may miss the real objection"]
+      },
+      {
+        "prospectEmail": "tomasz@signalboost.studio",
+        "hypothesis": "Tool-fatigued operators object on price first; lead with transparent pricing.",
+        "angle": "value beats price",
+        "subject": "price math for Signalboost",
+        "body": "Tomasz - 'tools that didn't stick' was uncomfortably real. We're a flat per-workspace fee with drafts-only and human approval. No new dashboard, plugs into existing call notes. Worth 15 minutes to see if the unit economics work for Signalboost?",
+        "followUp1": "Tomasz - quick bump. Specifically curious whether the flat-rate vs per-seat structure changes the calc for you.",
+        "followUp2": "Last note. If price isn't the issue I want to know what is.",
+        "ctaText": "15-min fit check",
+        "complianceFooter": "If this isn't a fit, reply 'no' and I won't follow up.",
+        "predictedReplyLikelihood": 0.3,
+        "predictedObjection": "pricing",
+        "riskWarnings": ["pricing-first framing may miss the real objection"]
+      },
+      {
+        "prospectEmail": "sofia@laneeleven.com",
+        "hypothesis": "Agency owners respond to missed-revenue framing more than AI automation framing.",
+        "angle": "missed-revenue framing",
+        "subject": "the second follow-up problem",
+        "body": "Sofia - heard the podcast clip about the second follow-up being your weak spot. We built Crucible for exactly that: it reads your call notes and drafts the second touch; you approve before anything sends. Open to a 15-min fit check?",
+        "followUp1": "Sofia - bumping. Which warm lead from the last month felt most preventable? That's usually the best fit-check input.",
+        "followUp2": "Last bump from me - if the second follow-up isn't your bottleneck I'll stop.",
+        "ctaText": "15-min fit check",
+        "complianceFooter": "If this isn't a fit, reply 'no' and I won't follow up.",
+        "predictedReplyLikelihood": 0.6,
+        "predictedObjection": "adoption / habit",
+        "riskWarnings": []
+      },
+      {
+        "prospectEmail": "hannah@frontline-mark.com",
+        "hypothesis": "Gatekeepers redirect cleanly when the ask is obvious and easy to forward.",
+        "angle": "easy redirect",
+        "subject": "right person at Frontline for follow-up tooling?",
+        "body": "Hannah - if you're not the right person on outbound follow-up workflow at Frontline, who would you point me to? Two-line context: we draft the second follow-up from existing call notes; the founder approves before anything sends. Happy to wait for the redirect.",
+        "followUp1": "Hannah - bumping; just need a name or 'not us' and I'll stop.",
+        "followUp2": "Last note - assuming this isn't a fit unless you redirect me, no need to reply.",
+        "ctaText": "name of the right person",
+        "complianceFooter": "If this isn't a fit, reply 'no' and I won't follow up.",
+        "predictedReplyLikelihood": 0.45,
+        "predictedObjection": "I'm not the buyer",
+        "riskWarnings": []
+      },
+      {
+        "prospectEmail": "camille@parallel-grow.co",
+        "hypothesis": "Quarterly buyers commit to pilots if scoped small and tied to their planning cycle.",
+        "angle": "pilot now, decide at planning",
+        "subject": "small first-cohort pilot at Parallel Grow",
+        "body": "Camille - given Q3 planning is around the corner, would a small first-cohort pilot (one campaign, 25 prospects) make sense before the planning meeting? Drafts only, you approve everything. No commitment past the cohort.",
+        "followUp1": "Camille - bumping. If timing is the only blocker I can pre-stage the pilot for the first week of August.",
+        "followUp2": "Last note - if the planning window is locked I'll re-ping in early August.",
+        "ctaText": "small pilot for first cohort",
+        "complianceFooter": "If this isn't a fit, reply 'no' and I won't follow up.",
+        "predictedReplyLikelihood": 0.5,
+        "predictedObjection": "timing / planning",
+        "riskWarnings": []
+      }
+    ]
+  },
+  "responseParser": {
+    "byReplyId": {
+      "reply_maya_okafor":      { "outcome": "positive",          "sentiment": "positive", "objectionType": null,                 "funnelStage": "meeting_offered", "volunteeredInfo": ["lost 2 warm deals", "Wed AM"],          "predictedWasCorrect": true,  "mismatchReason": null, "confidence": 0.92 },
+      "reply_marcus_rendon":    { "outcome": "pricing_objection", "sentiment": "neutral",  "objectionType": "implementation_time", "funnelStage": "evaluating",      "volunteeredInfo": ["price not the blocker", "burned by integrations"], "predictedWasCorrect": false, "mismatchReason": "Predicted pricing; actual blocker is implementation time.", "confidence": 0.88 },
+      "reply_aisling_murphy":   { "outcome": "pricing_objection", "sentiment": "neutral",  "objectionType": "implementation_time", "funnelStage": "qualifying",      "volunteeredInfo": ["tool freeze", "open if it replaces a workflow"], "predictedWasCorrect": false, "mismatchReason": "Predicted pricing; actual is tool/setup freeze tied to implementation overhead.", "confidence": 0.84 },
+      "reply_tomasz_kaminski":  { "outcome": "pricing_objection", "sentiment": "negative", "objectionType": "implementation_time", "funnelStage": "qualifying",      "volunteeredInfo": ["abandoned 3 tools", "needs <30 min install"], "predictedWasCorrect": false, "mismatchReason": "Predicted pricing; prospect explicitly says price isn't it; setup time is.", "confidence": 0.9 },
+      "reply_sofia_marenghi":   { "outcome": "positive",          "sentiment": "positive", "objectionType": null,                 "funnelStage": "meeting_offered", "volunteeredInfo": ["self-identifies as bottleneck", "mornings"], "predictedWasCorrect": true,  "mismatchReason": null, "confidence": 0.94 },
+      "reply_hannah_kowalski":  { "outcome": "wrong_person",      "sentiment": "neutral",  "objectionType": null,                 "funnelStage": "redirected",      "volunteeredInfo": ["redirect to COO"], "predictedWasCorrect": true,  "mismatchReason": null, "confidence": 0.97 },
+      "reply_camille_trujillo": { "outcome": "interested_later",  "sentiment": "positive", "objectionType": "timing",             "funnelStage": "nurture",         "volunteeredInfo": ["Q2 budget freeze", "re-ping Aug week 1"], "predictedWasCorrect": true,  "mismatchReason": null, "confidence": 0.91 }
+    }
+  },
+  "calibrationAgent": {
+    "summary": "Tool-Fatigued Operator predictions miss systematically: predicted pricing, observed implementation/setup time. Three of three sent emails to this archetype show the same mismatch. Update the archetype.",
+    "metrics": {
+      "sentCount": 7,
+      "replyCount": 7,
+      "predictionAccuracy": 0.5714,
+      "unpredictedObjectionRate": 0.4286,
+      "hostileOrUnsubscribeRate": 0,
+      "newObjectionClusterCount": 1,
+      "predictionAccuracyByArchetype": {
+        "Tool-Fatigued Operator": 0,
+        "Overworked Agency Owner": 1,
+        "Wrong-Person Gatekeeper": 1,
+        "Interested-But-Later Buyer": 1
+      },
+      "objectionConfusionMatrix": [
+        { "predicted": "pricing", "actual": "implementation_time", "count": 3 },
+        { "predicted": "adoption / habit", "actual": "none (positive)", "count": 2 },
+        { "predicted": "I'm not the buyer", "actual": "wrong_person", "count": 1 },
+        { "predicted": "timing / planning", "actual": "timing", "count": 1 }
+      ],
+      "anglePerformanceByArchetype": {
+        "Tool-Fatigued Operator": { "value beats price": { "replies": 3, "positives": 0 } },
+        "Overworked Agency Owner": { "missed-revenue framing": { "replies": 2, "positives": 2 } }
+      },
+      "ctaPerformance": { "15-min fit check": { "sent": 6, "positives": 2 }, "name of the right person": { "sent": 1, "positives": 0 } },
+      "phrasesToAvoid": ["price transparency", "flat pricing", "platform"],
+      "newUnpredictedObjections": ["implementation_time", "tool freeze"]
+    },
+    "updates": [
+      {
+        "archetypeName": "Tool-Fatigued Operator",
+        "shouldUpdate": true,
+        "reason": "Three of three predictions wrong; the systemic miss is implementation/setup time, not price.",
+        "oldPredictions": { "topObjection": "pricing", "preferredAngles": ["value beats price"], "predictedReplyLikelihood": 0.3 },
+        "observedReality": { "actualObjection": "implementation_time", "responsePattern": "explicitly disclaims price", "preferredAngles": ["one-evening setup", "drafts you approve"] },
+        "newPredictedObjections": ["implementation_time", "tool freeze", "setup overhead"],
+        "newPreferredAngles": ["one-evening setup", "drafts you approve, never auto-send", "implementation-light language"],
+        "phrasesToUse": ["we draft, you approve", "30-minute install", "no new dashboard", "15-min fit check"],
+        "phrasesToAvoid": ["pricing", "platform", "automation suite", "book a demo"],
+        "confidenceAfter": 0.78,
+        "diff": {
+          "added": [
+            "I do not have time to set up another tool.",
+            "Prefers 'we draft, you approve.'",
+            "Prefers implementation-light messaging.",
+            "Responds better to '15-min fit check' than 'book a demo.'"
+          ],
+          "removed": [
+            "Over-weighted pricing objection.",
+            "Disliked phrase: 'automation platform.'"
+          ]
+        }
+      }
+    ]
+  },
+  "nextCohort": {
+    "summary": "Cohort 2 leads with implementation-light framing for the Tool-Fatigued Operator segment and pulls back from pricing-first language. Doubles down on missed-revenue framing for Overworked Agency Owners. Pauses the Solo Consultant segment.",
+    "changesFromPreviousCohort": [
+      "Tool-Fatigued Operator emails reframed from 'value beats price' to 'one-evening setup, drafts only.'",
+      "Replaced 'book a demo' with '15-min fit check' globally.",
+      "Removed 'platform' and 'automation suite' from outbound vocabulary."
+    ],
+    "segmentsToDoubleDown": ["Overworked Agency Owner", "Tool-Fatigued Operator (with new framing)"],
+    "segmentsToPause": ["Skeptical Solo Consultant"],
+    "revisedMessageAngles": [
+      "implementation-light framing for tool-fatigued buyers",
+      "missed-revenue framing for owners",
+      "pilot-now-decide-at-planning for quarterly buyers"
+    ],
+    "newEmailTemplates": [
+      {
+        "archetypeName": "Tool-Fatigued Operator",
+        "subject": "30-minute install, drafts only",
+        "body": "Never lose a warm lead because you forgot the second follow-up - we draft it, you approve it. No new dashboard, no auto-send, 30-minute install on top of your existing call notes. Worth a 15-min fit check?",
+        "hypothesis": "Tool-fatigued operators respond to implementation-light framing rather than pricing.",
+        "angle": "one-evening setup, drafts only"
+      }
+    ],
+    "killCriterion": "Pause the Tool-Fatigued Operator framing again if Cohort 2 prediction accuracy for that archetype stays below 0.5.",
+    "successMetric": "Cohort 2 reply rate for Tool-Fatigued Operator >= 0.4 with prediction accuracy >= 0.65.",
+    "beforeEmail": "AI follow-up automation for agencies.",
+    "afterEmail": "Never lose a warm lead because you forgot the second follow-up - we draft it, you approve it."
+  }
+}

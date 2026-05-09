@@ -1,0 +1,9 @@
+export { prisma } from "./prisma";
+export * as offersRepo from "./repositories/offers";
+export * as archetypesRepo from "./repositories/archetypes";
+export * as prospectsRepo from "./repositories/prospects";
+export * as campaignsRepo from "./repositories/campaigns";
+export * as emailsRepo from "./repositories/emails";
+export * as repliesRepo from "./repositories/replies";
+export * as calibrationRepo from "./repositories/calibration";
+export * as suppressionRepo from "./repositories/suppression";

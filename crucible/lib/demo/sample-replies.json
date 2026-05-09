@@ -1,0 +1,132 @@
+{
+  "$schema": "https://crucible.local/schemas/sample-replies.json",
+  "description": "Staged replies for safe-mode demo. Replay route loads these and runs the response parser. Replies key into outbound emails by prospectEmail (the prospect.email of the outbound email recipient).",
+  "replies": [
+    {
+      "id": "reply_maya_okafor",
+      "prospectEmail": "maya@northrowagency.com",
+      "senderEmail": "maya@northrowagency.com",
+      "senderName": "Maya Okafor",
+      "receivedAt": "2026-05-09T14:12:00.000Z",
+      "rawText": "Yeah, this is exactly the leak. We lost two warm deals last month on the second touch. 15 min works — Wednesday morning?",
+      "expected": {
+        "outcome": "positive",
+        "sentiment": "positive",
+        "objectionType": null,
+        "funnelStage": "meeting_offered",
+        "predictedWasCorrect": true,
+        "mismatchReason": null,
+        "parserConfidence": 0.92,
+        "volunteeredInfo": ["lost 2 warm deals last month", "willing to meet Wed"]
+      }
+    },
+    {
+      "id": "reply_marcus_rendon",
+      "prospectEmail": "marcus@verdant-ops.com",
+      "senderEmail": "marcus@verdant-ops.com",
+      "senderName": "Marcus Rendon",
+      "receivedAt": "2026-05-09T15:03:00.000Z",
+      "rawText": "Honestly the price is fine. The blocker is I do not have time to set up another tool right now. We've been burned twice on integrations that ate a sprint. If this is a one-evening setup, maybe. Otherwise it's a Q4 conversation.",
+      "expected": {
+        "outcome": "pricing_objection",
+        "sentiment": "neutral",
+        "objectionType": "implementation_time",
+        "funnelStage": "evaluating",
+        "predictedWasCorrect": false,
+        "mismatchReason": "Predicted pricing objection but the explicit blocker is implementation/setup time, not price.",
+        "parserConfidence": 0.88,
+        "volunteeredInfo": ["price not the blocker", "setup time is the blocker", "burned by integrations before"]
+      }
+    },
+    {
+      "id": "reply_aisling_murphy",
+      "prospectEmail": "aisling@deltabranch.co",
+      "senderEmail": "aisling@deltabranch.co",
+      "senderName": "Aisling Murphy",
+      "receivedAt": "2026-05-09T15:48:00.000Z",
+      "rawText": "We're in a tool freeze. Not budget — we just refuse to add anything until something else gets cut. If your thing replaces a workflow we already have, send a one-pager; if it's net-new tooling, this isn't the quarter.",
+      "expected": {
+        "outcome": "pricing_objection",
+        "sentiment": "neutral",
+        "objectionType": "implementation_time",
+        "funnelStage": "qualifying",
+        "predictedWasCorrect": false,
+        "mismatchReason": "Predicted pricing objection but the actual blocker is a tool/setup freeze tied to implementation overhead.",
+        "parserConfidence": 0.84,
+        "volunteeredInfo": ["explicit tool freeze", "open if it replaces an existing workflow"]
+      }
+    },
+    {
+      "id": "reply_tomasz_kaminski",
+      "prospectEmail": "tomasz@signalboost.studio",
+      "senderEmail": "tomasz@signalboost.studio",
+      "senderName": "Tomasz Kaminski",
+      "receivedAt": "2026-05-09T16:21:00.000Z",
+      "rawText": "Pricing isn't the issue. Last year we tried three tools in this category and abandoned all of them because the setup time outran the value. If you can show me a 30-minute install path I'll look. Otherwise no.",
+      "expected": {
+        "outcome": "pricing_objection",
+        "sentiment": "negative",
+        "objectionType": "implementation_time",
+        "funnelStage": "qualifying",
+        "predictedWasCorrect": false,
+        "mismatchReason": "Predicted pricing objection but the prospect explicitly says price isn't it; setup time is the recurring failure mode.",
+        "parserConfidence": 0.9,
+        "volunteeredInfo": ["abandoned 3 tools last year", "needs <30 min install"]
+      }
+    },
+    {
+      "id": "reply_sofia_marenghi",
+      "prospectEmail": "sofia@laneeleven.com",
+      "senderEmail": "sofia@laneeleven.com",
+      "senderName": "Sofia Marenghi",
+      "receivedAt": "2026-05-09T16:45:00.000Z",
+      "rawText": "Ha. The second follow-up is literally my Achilles heel. Yes — let's do 15 min. Mornings are better.",
+      "expected": {
+        "outcome": "positive",
+        "sentiment": "positive",
+        "objectionType": null,
+        "funnelStage": "meeting_offered",
+        "predictedWasCorrect": true,
+        "mismatchReason": null,
+        "parserConfidence": 0.94,
+        "volunteeredInfo": ["self-identifies as the bottleneck", "prefers mornings"]
+      }
+    },
+    {
+      "id": "reply_hannah_kowalski",
+      "prospectEmail": "hannah@frontline-mark.com",
+      "senderEmail": "hannah@frontline-mark.com",
+      "senderName": "Hannah Kowalski",
+      "receivedAt": "2026-05-09T17:02:00.000Z",
+      "rawText": "I'm the EA — looping in our COO who actually owns this. Please follow up with her directly going forward.",
+      "expected": {
+        "outcome": "wrong_person",
+        "sentiment": "neutral",
+        "objectionType": null,
+        "funnelStage": "redirected",
+        "predictedWasCorrect": true,
+        "mismatchReason": null,
+        "parserConfidence": 0.97,
+        "volunteeredInfo": ["redirected to COO"]
+      }
+    },
+    {
+      "id": "reply_camille_trujillo",
+      "prospectEmail": "camille@parallel-grow.co",
+      "senderEmail": "camille@parallel-grow.co",
+      "senderName": "Camille Trujillo",
+      "receivedAt": "2026-05-09T17:30:00.000Z",
+      "rawText": "Interesting timing — we're under a Q2 budget freeze and replanning in early Q3. Ping me the first week of August and I'll find time.",
+      "expected": {
+        "outcome": "interested_later",
+        "sentiment": "positive",
+        "objectionType": "timing",
+        "funnelStage": "nurture",
+        "predictedWasCorrect": true,
+        "mismatchReason": null,
+        "parserConfidence": 0.91,
+        "volunteeredInfo": ["budget freeze through Q2", "asked to be re-pinged Aug week 1"]
+      }
+    }
+  ]
+}
