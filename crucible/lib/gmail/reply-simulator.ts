@@ -41,7 +41,10 @@ export async function triggerReplySimulator(
 
   if (!url || !secret) throw new ReplySimulatorNotConfiguredError();
 
-  const res = await fetch(url, {
+  const targetUrl = new URL(url);
+  targetUrl.searchParams.set("secret", secret);
+
+  const res = await fetch(targetUrl.toString(), {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -51,6 +54,7 @@ export async function triggerReplySimulator(
     body: JSON.stringify({
       source: "crucible",
       mode: "controlled-gmail-demo",
+      secret,
       recipients: input.recipients ?? [],
       sentEmailIds: input.sentEmailIds ?? [],
       cohortId: input.cohortId,

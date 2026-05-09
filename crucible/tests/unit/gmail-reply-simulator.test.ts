@@ -51,7 +51,7 @@ describe("triggerReplySimulator", () => {
     expect(result.triggered).toBe(true);
     expect(result.replied).toBe(2);
     expect(fetchMock).toHaveBeenCalledWith(
-      "https://example.com/webhook",
+      "https://example.com/webhook?secret=shared-secret",
       expect.objectContaining({
         method: "POST",
         headers: expect.objectContaining({
@@ -62,6 +62,7 @@ describe("triggerReplySimulator", () => {
     );
     const body = JSON.parse(fetchMock.mock.calls[0][1].body);
     expect(body.mode).toBe("controlled-gmail-demo");
+    expect(body.secret).toBe("shared-secret");
     expect(body.recipients).toEqual(["receiver+ops@example.com"]);
     expect(body.sentEmailIds).toEqual(["eml_1"]);
   });

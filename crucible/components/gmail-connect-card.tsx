@@ -7,6 +7,7 @@ type GmailStatus = {
   connected: boolean;
   safeMode: boolean;
   allowlistSize: number;
+  allowlist?: string[];
   emailAddress?: string;
   canSend: boolean;
 };
@@ -72,7 +73,7 @@ export function GmailConnectCard({ workspaceId, className }: Props) {
     <section
       className={
         className ??
-        "rounded-lg border border-zinc-700 bg-zinc-900/60 p-4 text-zinc-100"
+        "surface p-5 text-white"
       }
       aria-label="Gmail connection"
     >
@@ -95,43 +96,28 @@ export function GmailConnectCard({ workspaceId, className }: Props) {
         </span>
       </header>
 
-      <p className="mt-2 text-xs text-zinc-400">
-        Gmail is optional. The demo loop runs in safe mode without it. Connect
-        a controlled Gmail account to create drafts or send to approved
-        recipients.
+      <p className="mt-2 text-sm text-white/55">
+        Controlled Gmail proof account for drafts, sends, and reply polling.
       </p>
 
       {status && (
-        <ul className="mt-3 space-y-1 text-xs text-zinc-300">
-          <li>
-            Demo safe mode:{" "}
-            <span className={status.safeMode ? "text-amber-300" : "text-zinc-100"}>
-              {status.safeMode ? "ON (sends blocked)" : "off"}
-            </span>
-          </li>
-          <li>
-            OAuth credentials:{" "}
-            <span className={status.configured ? "text-zinc-100" : "text-zinc-500"}>
-              {status.configured ? "configured" : "missing"}
-            </span>
-          </li>
-          <li>
-            Controlled recipients allowlist:{" "}
-            <span className="text-zinc-100">{status.allowlistSize}</span>
-          </li>
-          {status.emailAddress && (
-            <li>
-              Connected as:{" "}
-              <span className="text-zinc-100">{status.emailAddress}</span>
-            </li>
-          )}
-          <li>
-            Live send permitted:{" "}
-            <span className={status.canSend ? "text-emerald-300" : "text-zinc-500"}>
-              {status.canSend ? "yes" : "no"}
-            </span>
-          </li>
-        </ul>
+        <div className="mt-4 grid gap-2 text-xs text-white/70">
+          <StatusLine
+            label="Sender"
+            value={status.emailAddress ?? "Not connected"}
+            good={status.connected}
+          />
+          <StatusLine
+            label="Live sends"
+            value={status.canSend ? "Ready" : status.safeMode ? "Blocked by safe mode" : "Not ready"}
+            good={status.canSend}
+          />
+          <StatusLine
+            label="Test recipients"
+            value={`${status.allowlistSize} allowlisted`}
+            good={status.allowlistSize > 0}
+          />
+        </div>
       )}
 
       {error && (
@@ -145,7 +131,7 @@ export function GmailConnectCard({ workspaceId, className }: Props) {
           type="button"
           onClick={startConnect}
           disabled={connecting || !status?.configured}
-          className="rounded-md bg-zinc-100 px-3 py-1.5 text-xs font-medium text-zinc-900 transition hover:bg-white disabled:cursor-not-allowed disabled:opacity-40"
+          className="rounded-md bg-white px-3 py-1.5 text-xs font-medium text-ink-950 transition hover:bg-white/90 disabled:cursor-not-allowed disabled:opacity-40"
         >
           {connecting
             ? "Redirecting..."
@@ -156,7 +142,7 @@ export function GmailConnectCard({ workspaceId, className }: Props) {
         <button
           type="button"
           onClick={() => void loadStatus()}
-          className="rounded-md border border-zinc-700 px-3 py-1.5 text-xs text-zinc-200 hover:bg-zinc-800"
+          className="rounded-md border border-white/10 px-3 py-1.5 text-xs text-white/80 hover:bg-white/5"
         >
           Refresh
         </button>
@@ -174,3 +160,22 @@ export function GmailConnectCard({ workspaceId, className }: Props) {
 }
 
 export default GmailConnectCard;
+
+function StatusLine({
+  label,
+  value,
+  good,
+}: {
+  label: string;
+  value: string;
+  good: boolean;
+}) {
+  return (
+    <div className="flex items-center justify-between gap-3 rounded-lg border border-white/10 bg-white/[0.03] px-3 py-2">
+      <span className="text-white/45">{label}</span>
+      <span className={good ? "text-signal-green" : "text-signal-amber"}>
+        {value}
+      </span>
+    </div>
+  );
+}

@@ -1,11 +1,21 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { ArrowRight, AlertTriangle, CheckCircle2, FileText, Mail, Send } from "lucide-react";
 import { archetypes, outboundEmails, prospects } from "./seed/data";
 import { HypothesisPill } from "./hypothesis-pill";
 import { GmailConnectCard } from "./gmail-connect-card";
+
+type GmailStatus = {
+  configured: boolean;
+  connected: boolean;
+  safeMode: boolean;
+  allowlistSize: number;
+  allowlist?: string[];
+  emailAddress?: string;
+  canSend: boolean;
+};
 
 function wordCount(s: string) {
   return s.trim().split(/\s+/).filter(Boolean).length;
@@ -19,6 +29,7 @@ export function OutboundForge({ offerId }: { offerId: string }) {
   >(null);
   const [gmailMessage, setGmailMessage] = useState<string | null>(null);
   const [sentEmailIds, setSentEmailIds] = useState<string[]>([]);
+  const [gmailStatus, setGmailStatus] = useState<GmailStatus | null>(null);
 
   const byProspect = useMemo(() => {
     const map = new Map(prospects.map((p) => [p.id, p]));
@@ -31,6 +42,29 @@ export function OutboundForge({ offerId }: { offerId: string }) {
 
   const approvedCount = emails.filter((e) => e.approved).length;
   const approvedEmails = emails.filter((e) => e.approved);
+
+  useEffect(() => {
+    let cancelled = false;
+    async function loadGmailStatus() {
+      try {
+        const res = await fetch("/api/gmail/status", { cache: "no-store" });
+        const json = await res.json();
+        if (!cancelled && json.ok) {
+          const status = json.data as GmailStatus;
+          setGmailStatus(status);
+          if (!testRecipients.trim() && status.allowlist?.length) {
+            setTestRecipients(status.allowlist.join(", "));
+          }
+        }
+      } catch {
+        // Gmail is optional; the connect card will show detailed failures.
+      }
+    }
+    void loadGmailStatus();
+    return () => {
+      cancelled = true;
+    };
+  }, [testRecipients]);
 
   function toggleApprove(id: string) {
     setEmails((all) =>
@@ -186,7 +220,7 @@ export function OutboundForge({ offerId }: { offerId: string }) {
         </div>
         <div className="flex flex-col gap-2 sm:flex-row">
           <a href="#gmail-live-controls" className="btn-secondary">
-            <FileText className="h-4 w-4" /> Gmail live controls
+            <FileText className="h-4 w-4" /> Live Gmail proof
           </a>
           <Link href={`/runs/${offerId}/monitor`} className="btn-primary">
             Open monitor <ArrowRight className="h-4 w-4" />
@@ -202,18 +236,35 @@ export function OutboundForge({ offerId }: { offerId: string }) {
         <div className="surface p-5">
           <div className="label">Controlled Gmail live mode</div>
           <h3 className="mt-1 text-base font-semibold text-white/90">
-            Run the controlled sender-to-receiver proof
+            Send the approved mini-cohort to your receiver aliases
           </h3>
           <p className="mt-2 text-sm text-white/55">
-            Drafts and sends use approved emails only. Live sends still require
-            <code className="mx-1">DEMO_SAFE_MODE=false</code>, a connected Gmail account, and an allowlisted recipient.
+            This uses only the {approvedEmails.length} approved drafts below and
+            cycles across the allowlisted test recipients.
           </p>
+          <div className="mt-4 grid gap-2 text-xs sm:grid-cols-3">
+            <LivePill
+              label="Gmail"
+              value={gmailStatus?.connected ? "connected" : "not connected"}
+              ok={Boolean(gmailStatus?.connected)}
+            />
+            <LivePill
+              label="Safe mode"
+              value={gmailStatus?.safeMode ? "send blocked" : "live send on"}
+              ok={!gmailStatus?.safeMode}
+            />
+            <LivePill
+              label="Recipients"
+              value={`${parseRecipientList(testRecipients).length} loaded`}
+              ok={parseRecipientList(testRecipients).length > 0}
+            />
+          </div>
           <div className="mt-4 flex flex-col gap-3">
             <input
               type="text"
               value={testRecipients}
               onChange={(event) => setTestRecipients(event.target.value)}
-              placeholder="receiver+ops@example.com, receiver+pricing@example.com"
+              placeholder="Allowlisted receiver aliases auto-fill here"
               className="min-w-0 rounded-lg border border-white/10 bg-ink-900 px-3 py-2 text-sm text-white outline-none transition placeholder:text-white/30 focus:border-ember-400/60"
             />
             <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-4">
@@ -251,7 +302,8 @@ export function OutboundForge({ offerId }: { offerId: string }) {
           </div>
           {approvedEmails.length > 0 ? (
             <p className="mt-3 text-xs text-white/45">
-              {approvedEmails.length} approved emails ready. Recipients are assigned in order and reused if fewer aliases are supplied.
+              Drafts can be created in safe mode. Sending requires safe mode off,
+              Gmail connected, and recipients in the allowlist.
             </p>
           ) : (
             <p className="mt-3 text-xs text-signal-amber">
@@ -348,6 +400,25 @@ export function OutboundForge({ offerId }: { offerId: string }) {
             </article>
           );
         })}
+      </div>
+    </div>
+  );
+}
+
+function LivePill({
+  label,
+  value,
+  ok,
+}: {
+  label: string;
+  value: string;
+  ok: boolean;
+}) {
+  return (
+    <div className="rounded-lg border border-white/10 bg-white/[0.03] px-3 py-2">
+      <div className="text-white/40">{label}</div>
+      <div className={ok ? "text-signal-green" : "text-signal-amber"}>
+        {value}
       </div>
     </div>
   );

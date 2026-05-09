@@ -33,6 +33,7 @@ export async function GET(req: NextRequest) {
     connected,
     safeMode,
     allowlistSize: allowlist.length,
+    allowlist,
     emailAddress,
     canSend: configured && connected && !safeMode && allowlist.length > 0,
   });
