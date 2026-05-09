@@ -1,5 +1,10 @@
 import { ProspectTable } from "@/components/prospect-table";
 
-export default function ProspectsPage({ params }: { params: { offerId: string } }) {
-  return <ProspectTable offerId={params.offerId} />;
+export default async function ProspectsPage({
+  params,
+}: {
+  params: Promise<{ offerId: string }>;
+}) {
+  const { offerId } = await params;
+  return <ProspectTable offerId={offerId} />;
 }

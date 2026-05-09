@@ -1,4 +1,5 @@
 import { getGmailClientForWorkspace } from "./client";
+import { getControlledRecipients } from "./allowlist";
 import { toGmailReply } from "./parse-message";
 import type { GmailFailure, GmailReply, GmailResult } from "./types";
 
@@ -22,6 +23,7 @@ export async function pollReplies(
     const max = input.maxMessages ?? 25;
     const replies: GmailReply[] = [];
     const seen = new Set<string>();
+    const allowedReplySenders = getAllowedReplySenders();
 
     if (input.threadIds && input.threadIds.length > 0) {
       for (const threadId of input.threadIds) {
@@ -35,7 +37,9 @@ export async function pollReplies(
           if (isFromMe(msg.labelIds)) continue;
           seen.add(msg.id);
           const parsed = toGmailReply(msg);
-          if (parsed) replies.push(parsed);
+          if (parsed && isRelevantReplySender(parsed.fromEmail, allowedReplySenders)) {
+            replies.push(parsed);
+          }
           if (replies.length >= max) break;
         }
         if (replies.length >= max) break;
@@ -67,7 +71,9 @@ export async function pollReplies(
       });
       if (isFromMe(full.data.labelIds)) continue;
       const parsed = toGmailReply(full.data);
-      if (parsed) replies.push(parsed);
+      if (parsed && isRelevantReplySender(parsed.fromEmail, allowedReplySenders)) {
+        replies.push(parsed);
+      }
       if (replies.length >= max) break;
     }
 
@@ -86,4 +92,32 @@ export async function pollReplies(
 function isFromMe(labelIds: string[] | null | undefined): boolean {
   if (!labelIds) return false;
   return labelIds.includes("SENT") && !labelIds.includes("INBOX");
+}
+
+function getAllowedReplySenders(): Set<string> {
+  return new Set(
+    getControlledRecipients()
+      .map((recipient) => normalizeReplySender(recipient))
+      .filter((email): email is string => Boolean(email)),
+  );
+}
+
+function isRelevantReplySender(
+  fromEmail: string,
+  allowedReplySenders: Set<string>,
+): boolean {
+  if (allowedReplySenders.size === 0) return true;
+  return allowedReplySenders.has(normalizeEmail(fromEmail));
+}
+
+function normalizeReplySender(recipient: string): string | null {
+  const normalized = normalizeEmail(recipient);
+  if (!normalized || normalized.startsWith("@")) return null;
+  const [local, domain] = normalized.split("@");
+  if (!local || !domain) return null;
+  return `${local.split("+")[0]}@${domain}`;
+}
+
+function normalizeEmail(email: string): string {
+  return email.trim().toLowerCase().replace(/^.*<([^>]+)>.*$/, "$1");
 }

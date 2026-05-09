@@ -1,5 +1,10 @@
 import { OutboundForge } from "@/components/outbound-forge";
 
-export default function ForgePage({ params }: { params: { offerId: string } }) {
-  return <OutboundForge offerId={params.offerId} />;
+export default async function ForgePage({
+  params,
+}: {
+  params: Promise<{ offerId: string }>;
+}) {
+  const { offerId } = await params;
+  return <OutboundForge offerId={offerId} />;
 }

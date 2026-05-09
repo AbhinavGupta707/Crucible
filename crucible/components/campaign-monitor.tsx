@@ -58,8 +58,8 @@ export function CampaignMonitor({ offerId }: { offerId: string }) {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          newerThanDays: 7,
-          maxMessages: 10,
+          newerThanDays: 1,
+          maxMessages: 50,
           analyze: true,
           prediction: firstApproved
             ? {
@@ -99,8 +99,7 @@ export function CampaignMonitor({ offerId }: { offerId: string }) {
             {replayed ? `${replies.length} replies parsed` : "No replies yet"}
           </h2>
           <p className="mt-1 text-sm text-white/55">
-            Demo Safe Mode replays seeded replies through the real parser. Live Gmail polling is opt-in
-            and never required for the demo.
+            Poll controlled Gmail replies, or replay seeded replies to unlock the guaranteed learning-loop moment.
           </p>
         </div>
         <div className="flex flex-col gap-2 sm:flex-row">

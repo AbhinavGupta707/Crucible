@@ -3,49 +3,62 @@
 import { useEffect, useState } from "react";
 import { ShieldCheck } from "lucide-react";
 
-const STORAGE_KEY = "crucible:demo-safe-mode";
-
-export function useDemoSafeMode() {
-  const [enabled, setEnabled] = useState(true);
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    const v = window.localStorage.getItem(STORAGE_KEY);
-    if (v === "false") setEnabled(false);
-  }, []);
-  const set = (next: boolean) => {
-    setEnabled(next);
-    if (typeof window !== "undefined") {
-      window.localStorage.setItem(STORAGE_KEY, String(next));
-    }
-  };
-  return [enabled, set] as const;
-}
+type GmailStatus = {
+  safeMode: boolean;
+  canSend: boolean;
+};
 
 export function DemoModeToggle() {
-  const [enabled, setEnabled] = useDemoSafeMode();
+  const [status, setStatus] = useState<GmailStatus | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    async function loadStatus() {
+      try {
+        const res = await fetch("/api/gmail/status", { cache: "no-store" });
+        const json = await res.json();
+        if (!cancelled && json.ok) setStatus(json.data as GmailStatus);
+      } catch {
+        if (!cancelled) setStatus({ safeMode: true, canSend: false });
+      }
+    }
+
+    void loadStatus();
+    const onFocus = () => void loadStatus();
+    window.addEventListener("focus", onFocus);
+    return () => {
+      cancelled = true;
+      window.removeEventListener("focus", onFocus);
+    };
+  }, []);
+
+  const safeMode = status?.safeMode ?? true;
+  const label = safeMode ? "Demo Safe Mode" : "Live Gmail Mode";
+
   return (
-    <button
-      onClick={() => setEnabled(!enabled)}
-      className={`group inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-medium transition ${
-        enabled
-          ? "border-signal-green/40 bg-signal-green/10 text-signal-green hover:bg-signal-green/15"
-          : "border-signal-amber/40 bg-signal-amber/10 text-signal-amber hover:bg-signal-amber/15"
+    <div
+      className={`inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-medium ${
+        safeMode
+          ? "border-signal-green/40 bg-signal-green/10 text-signal-green"
+          : "border-signal-amber/40 bg-signal-amber/10 text-signal-amber"
       }`}
       title={
-        enabled
-          ? "Demo Safe Mode: no Gmail, no live AI, no real sends. Click to flip to Live Mode (UI demo only)."
-          : "Live Mode (UI demo only). Click to return to Demo Safe Mode."
+        safeMode
+          ? "Server env has DEMO_SAFE_MODE enabled, so real sends are blocked."
+          : "Server env has DEMO_SAFE_MODE disabled, so allowlisted live sends are enabled."
       }
     >
       <ShieldCheck className="h-3.5 w-3.5" />
-      <span className="hidden sm:inline">Demo Safe Mode</span>
-      <span className="sm:hidden">Safe Mode</span>
+      <span className="hidden sm:inline">{label}</span>
+      <span className="sm:hidden">{safeMode ? "Safe" : "Live"}</span>
       <span
         className={`ml-1 inline-block h-2 w-2 rounded-full ${
-          enabled ? "bg-signal-green animate-pulse-soft" : "bg-signal-amber"
+          safeMode ? "bg-signal-green animate-pulse-soft" : "bg-signal-amber"
         }`}
       />
-      <span className="text-[10px] uppercase tracking-wider opacity-70">{enabled ? "ON" : "OFF"}</span>
-    </button>
+      <span className="text-[10px] uppercase tracking-wider opacity-70">
+        {safeMode ? "ON" : "LIVE"}
+      </span>
+    </div>
   );
 }

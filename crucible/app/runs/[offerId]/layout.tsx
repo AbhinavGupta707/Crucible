@@ -6,11 +6,22 @@ export default function RunLayout({
   params,
 }: {
   children: React.ReactNode;
-  params: { offerId: string };
+  params: Promise<{ offerId: string }>;
 }) {
+  return <RunLayoutContent children={children} params={params} />;
+}
+
+async function RunLayoutContent({
+  children,
+  params,
+}: {
+  children: React.ReactNode;
+  params: Promise<{ offerId: string }>;
+}) {
+  const { offerId } = await params;
   return (
     <div>
-      <RunNav offerId={params.offerId} title={offer.title} />
+      <RunNav offerId={offerId} title={offer.title} />
       {children}
     </div>
   );

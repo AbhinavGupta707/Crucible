@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { use, useState } from "react";
 import { ArrowRight, ListChecks, Play } from "lucide-react";
 import {
   archetypeAccuracy,
@@ -14,7 +14,12 @@ import { PredictionActualMatrix } from "@/components/prediction-actual-matrix";
 import { VersionDiff } from "@/components/version-diff";
 import { CalibrationAnimation } from "@/components/calibration-animation";
 
-export default function CalibrationPage({ params }: { params: { offerId: string } }) {
+export default function CalibrationPage({
+  params,
+}: {
+  params: Promise<{ offerId: string }>;
+}) {
+  const { offerId } = use(params);
   const [phase, setPhase] = useState<"idle" | "running" | "done">("idle");
   const archetype = archetypes.find((a) => a.id === personaUpdate.archetypeId)!;
 
@@ -36,7 +41,7 @@ export default function CalibrationPage({ params }: { params: { offerId: string 
             <Play className="h-4 w-4" /> Run calibration
           </button>
         ) : phase === "done" ? (
-          <Link href={`/runs/${params.offerId}/next-cohort`} className="btn-primary">
+          <Link href={`/runs/${offerId}/next-cohort`} className="btn-primary">
             Generate next cohort <ArrowRight className="h-4 w-4" />
           </Link>
         ) : null}
@@ -109,7 +114,7 @@ export default function CalibrationPage({ params }: { params: { offerId: string 
                 generic AI automation. Cohort 2 reprioritises leads before rewriting copy.
               </p>
             </div>
-            <Link href={`/runs/${params.offerId}/next-cohort`} className="btn-primary shrink-0">
+            <Link href={`/runs/${offerId}/next-cohort`} className="btn-primary shrink-0">
               See next cohort <ArrowRight className="h-4 w-4" />
             </Link>
           </section>

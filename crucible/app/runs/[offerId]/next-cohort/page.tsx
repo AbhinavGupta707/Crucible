@@ -1,5 +1,10 @@
 import { NextCohortPreview } from "@/components/next-cohort-preview";
 
-export default function NextCohortPage({ params }: { params: { offerId: string } }) {
-  return <NextCohortPreview offerId={params.offerId} />;
+export default async function NextCohortPage({
+  params,
+}: {
+  params: Promise<{ offerId: string }>;
+}) {
+  const { offerId } = await params;
+  return <NextCohortPreview offerId={offerId} />;
 }

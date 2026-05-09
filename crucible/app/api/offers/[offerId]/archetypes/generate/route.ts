@@ -10,12 +10,13 @@ export const maxDuration = 60;
 
 export async function POST(
   _req: NextRequest,
-  { params }: { params: { offerId: string } },
+  { params }: { params: Promise<{ offerId: string }> | { offerId: string } },
 ) {
   return withEnvelope(async ({ traceId }) => {
-    const offer = offersRepo.findById(params.offerId);
+    const { offerId } = await params;
+    const offer = offersRepo.findById(offerId);
     if (!offer) {
-      return fail(ERROR_CODES.NOT_FOUND, `Offer not found: ${params.offerId}`, { traceId });
+      return fail(ERROR_CODES.NOT_FOUND, `Offer not found: ${offerId}`, { traceId });
     }
 
     const existing = archetypesRepo.listByOffer(offer.id);
