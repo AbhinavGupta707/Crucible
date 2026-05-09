@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
 import {
   MessageSimulationIntake,
@@ -13,6 +12,7 @@ import {
   SimulationProgressRail,
   SimStage,
 } from "@/components/simulation-progress-rail";
+import { usePageTransition } from "@/components/page-transition-provider";
 
 const EMPTY: IntakeValues = {
   productIdea: "",
@@ -22,7 +22,7 @@ const EMPTY: IntakeValues = {
 };
 
 export default function Home() {
-  const router = useRouter();
+  const { go } = usePageTransition();
   const [stage, setStage] = useState<SimStage>("intake");
   const [intake, setIntake] = useState<IntakeValues>(EMPTY);
 
@@ -34,7 +34,7 @@ export default function Home() {
   const onSimComplete = () => setStage("rewrite");
   const onAbort = () => setStage("intake");
   const onRunAgain = () => setStage("simulating");
-  const onContinue = () => router.push("/runs/demo-offer/prospects");
+  const onContinue = () => go("/runs/demo-offer/prospects", "Opening Signal Radar");
 
   return (
     <main className="min-h-screen w-full">
@@ -114,7 +114,7 @@ function TopNav() {
         <div className="hidden items-center gap-2 md:flex">
           <span className="chip">Hypothesis-first</span>
           <span className="chip chip-cyan">
-            <span className="pulse-dot pulse-dot--cyan" /> Demo safe-mode
+            <span className="pulse-dot pulse-dot--cyan" /> Controlled proof
           </span>
         </div>
       </div>

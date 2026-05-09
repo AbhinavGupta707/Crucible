@@ -66,6 +66,12 @@ const STAGE_ORDER: PersonaStatus[] = [
   "complete",
 ];
 
+const START_DELAY_MS = 550;
+const PERSONA_STAGGER_MS = 900;
+const STAGE_MS = 1500;
+const WRAP_UP_MS = 1000;
+const TICK_MS = 100;
+
 export function SimulationLab({
   coldEmail,
   productIdea,
@@ -85,13 +91,13 @@ export function SimulationLab({
   useEffect(() => {
     completedRef.current = false;
     const start = Date.now();
-    const startOffsets = personas.map((_, i) => 200 + i * 380);
-    // each stage takes ~700ms
-    const STAGE_MS = 700;
+    const startOffsets = personas.map(
+      (_, i) => START_DELAY_MS + i * PERSONA_STAGGER_MS,
+    );
 
     const id = setInterval(() => {
       const elapsed = Date.now() - start;
-      setTick((t) => t + 1);
+      setTick(Math.floor(elapsed / TICK_MS));
 
       const next = personas.map((_, i) => {
         const e = elapsed - startOffsets[i];
@@ -105,7 +111,9 @@ export function SimulationLab({
       setStatuses(next);
 
       const totalDuration =
-        startOffsets[startOffsets.length - 1] + STAGE_MS * (STAGE_ORDER.length - 1) + 400;
+        startOffsets[startOffsets.length - 1] +
+        STAGE_MS * (STAGE_ORDER.length - 1) +
+        WRAP_UP_MS;
       const pct = Math.min(100, Math.round((elapsed / totalDuration) * 100));
       setProgress(pct);
 
@@ -115,11 +123,10 @@ export function SimulationLab({
         elapsed > totalDuration - 200
       ) {
         completedRef.current = true;
+        setProgress(100);
         clearInterval(id);
-        // small reveal pause then hand off
-        setTimeout(() => onComplete(), 1200);
       }
-    }, 80);
+    }, TICK_MS);
 
     return () => clearInterval(id);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -150,12 +157,12 @@ export function SimulationLab({
               AI Simulation Lab
             </h2>
             <p className="text-sm text-muted mt-1">
-              Market Reaction Simulation · Founder-led outbound
+              Market Reaction Simulation - Founder-led outbound
             </p>
           </div>
           <div className="flex items-center gap-3">
             <div className="hidden md:flex items-center gap-3 chip">
-              <span className="font-mono">{formatElapsed(tick * 80)}</span>
+              <span className="font-mono">{formatElapsed(tick * TICK_MS)}</span>
               <span className="text-dim">elapsed</span>
             </div>
             <button onClick={onAbort} className="btn-ghost text-xs">
@@ -272,7 +279,7 @@ export function SimulationLab({
                 <span className="pulse-dot pulse-dot--cyan" />
                 <div>
                   <div className="text-sm font-medium">
-                    Reactions complete — preparing rewrite…
+                    Reactions complete - rewrite is ready
                   </div>
                   <div className="text-xs text-muted">
                     Synthesising message strengths and rewriting against{" "}
@@ -280,7 +287,9 @@ export function SimulationLab({
                   </div>
                 </div>
               </div>
-              <span className="chip chip-cyan">Generating refinement</span>
+              <button type="button" onClick={onComplete} className="btn-primary shrink-0">
+                Reveal refined template
+              </button>
             </motion.div>
           ) : null}
         </AnimatePresence>
@@ -387,7 +396,7 @@ function PersonaCard({
 
       <div className="min-h-[88px]">
         {status === "idle" ? (
-          <div className="text-xs text-dim">Awaiting message…</div>
+          <div className="text-xs text-dim">Awaiting message...</div>
         ) : null}
 
         {showThinking ? (
@@ -397,7 +406,7 @@ function PersonaCard({
                 key={i}
                 initial={{ opacity: 0, x: -4 }}
                 animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: i * 0.18 }}
+                transition={{ delay: i * 0.32 }}
                 className="text-[11px] text-muted flex items-center gap-2"
               >
                 <span className="h-1 w-1 rounded-full bg-amber" />
@@ -408,7 +417,7 @@ function PersonaCard({
         ) : null}
 
         {showTyping ? (
-          <TypewriterLine text={persona.reaction} speedMs={14} />
+          <TypewriterLine text={persona.reaction} speedMs={22} />
         ) : null}
 
         {showResponse ? (
@@ -462,7 +471,7 @@ function PersonaCard({
             className="mt-3 pt-3 border-t border-white/5 space-y-2 overflow-hidden"
           >
             <MicroLine icon="+" label="Liked" value={persona.liked} tone="mint" />
-            <MicroLine icon="–" label="Disliked" value={persona.disliked} tone="rose" />
+            <MicroLine icon="-" label="Disliked" value={persona.disliked} tone="rose" />
             <MicroLine icon="!" label="Objection" value={persona.objection} tone="amber" />
             <div className="flex flex-wrap gap-1.5 pt-1">
               {persona.tags.map((t) => (
@@ -602,7 +611,11 @@ function InsightCard({
     <div className="glass-strong rounded-2xl p-4">
       <div className="flex items-center justify-between mb-2">
         <span className="label-eyebrow">{label}</span>
-        <span className={accent === "amber" ? "text-amber" : "text-cyan"}>●</span>
+        <span
+          className={`h-2 w-2 rounded-full ${
+            accent === "amber" ? "bg-ember-400" : "bg-plasma-300"
+          }`}
+        />
       </div>
       <div className="text-3xl font-semibold tracking-tight">{value}</div>
       {spark ? <Sparkline /> : null}
@@ -643,7 +656,7 @@ function ObjectionsCard({ ready }: { ready: boolean }) {
         {ready ? (
           <span className="chip chip-amber">Ready</span>
         ) : (
-          <span className="chip">Building…</span>
+          <span className="chip">Building...</span>
         )}
       </div>
       <div className="space-y-2.5">
