@@ -1,20 +1,47 @@
-# Final direction: **Crucible — Outbound That Learns**
+# Final direction: **Crucible — Signal-Led Outbound That Learns**
 
-**Crucible is a self-improving outbound engine for founders.** It takes an offer, builds a buyer-archetype library, matches real leads to those archetypes, predicts likely objections, writes hypothesis-driven cold emails, sends or drafts them via Gmail, monitors replies, classifies outcomes, and updates its buyer memory so the next cohort is sharper.
+**Crucible is a signal-led GTM engine for founder-led outbound.** It takes an offer and signal-enriched leads, ranks who matters now, explains why now, uses buyer memory to predict likely objections and message angles, writes hypothesis-driven signal-aware outreach, drafts or sends via Gmail, monitors replies, classifies outcomes, and updates signal, buyer, and message memory so the next cohort is sharper.
 
 The core loop is:
 
 ```text
-Offer → buyer archetypes → lead matching → predicted reaction → tailored email
-→ Gmail send/draft → reply monitoring → predicted-vs-actual analysis
-→ persona calibration → next cohort rewritten
+Offer + lead signals → Signal Radar → lead priority + why now
+→ Buyer Memory → predicted objection + message angle
+→ Signal-to-Message Forge → Gmail draft/send or replay
+→ reply parsing → predicted-vs-actual analysis
+→ Signal Memory + Buyer Memory + Message Memory
+→ next signal cohort reprioritised and rewritten
 ```
 
 The hackathon demo should show one thing clearly:
 
-> **Crucible gets the first campaign partly wrong, learns why from replies, updates its buyer memory, and rewrites the next campaign better.**
+> **Crucible gets the first signal-led campaign partly wrong, learns which signals and messages actually produced replies, updates its memory, and reprioritises the next cohort.**
 
 That is the product.
+
+## 2026-05-09 pivot addendum: signal-led GTM layer
+
+This addendum supersedes any older wording below that frames the product primarily as buyer archetype simulation.
+
+The product should now feel closer to a **signal-led GTM engine** than a pure persona simulator:
+
+```text
+Who should I contact?
+Why now?
+What should I say?
+What happened?
+What did we learn?
+Who should we contact next?
+```
+
+Keep buyer archetypes, prediction, reply parsing, Gmail draft-first, calibration, cached AI, and demo safe mode. Add one layer before buyer matching and one learning object after replies:
+
+```text
+Before matching: Signal Radar ranks leads using ICP fit, signal strength, freshness, archetype match, and message confidence.
+After replies: Signal Memory learns which signal types actually performed.
+```
+
+Do **not** build live Apollo, Clay, LinkedIn, or scraping integrations for MVP. Signals are imported through seeded/demo CSV fields.
 
 ---
 
@@ -25,32 +52,35 @@ That is the product.
 1. **Offer Intake**
    Founder describes product, ICP guess, pain, proof point, desired CTA.
 
-2. **Buyer Archetype Library**
+2. **Signal Radar / Lead Queue**
+   Upload 20–30 signal-enriched leads. Rank who to contact first and explain "why this lead, why now."
+
+3. **Buyer Memory**
    8–12 synthetic buyer archetypes, each with predicted objections, preferred framing, confidence, and version history.
 
-3. **Lead CSV Upload**
-   Upload 20–30 enriched leads. Each lead is matched to an archetype.
+4. **Lead CSV Upload**
+   Upload 20–30 enriched leads with signal fields. Each lead is scored, ranked, and matched to an archetype.
 
-4. **Pre-flight Simulation**
-   For each lead, Crucible predicts: reply likelihood, likely objection, best message angle.
+5. **Pre-flight Simulation**
+   For each lead, Crucible predicts: reply likelihood, likely objection, best message angle, and signal relevance.
 
-5. **Outbound Forge**
-   Generates cold emails and follow-ups. Every email is tied to an explicit hypothesis.
+6. **Signal-to-Message Forge**
+   Generates cold emails and follow-ups. Every email is tied to an explicit hypothesis and references the lead signal naturally.
 
-6. **Gmail Integration**
+7. **Gmail Integration**
    For demo: create Gmail drafts or send a small number of emails from a new Gmail account to controlled/test recipients. Gmail API supports direct sends through `users.messages.send`, and draft creation requires an RFC 2822 MIME message encoded as base64URL. ([Google for Developers][1])
 
-7. **Reply Monitor**
+8. **Reply Monitor**
    Poll Gmail for replies in demo; use Gmail push notifications with Pub/Sub only as production architecture. Gmail supports `messages.list` with query syntax like the Gmail search box, and push notifications are available via Cloud Pub/Sub for mailbox changes. ([Google for Developers][2])
 
-8. **Response Parser**
+9. **Response Parser**
    Classifies replies into a fixed taxonomy.
 
-9. **Calibration Engine**
-   Compares predicted vs actual response. Updates buyer archetype from v1 → v2.
+10. **Calibration Engine**
+    Compares predicted vs actual response. Updates Buyer Memory, Message Memory, and Signal Memory.
 
-10. **Next Cohort Generator**
-    Rewrites the next batch of emails using the calibrated memory.
+11. **Next Signal Cohort Generator**
+    Reprioritises the next leads and rewrites the next batch of emails using calibrated memory.
 
 ## Do not build this for MVP
 
@@ -77,21 +107,21 @@ The buyer committee and investor coach are good roadmap modules, but they dilute
 
 ## One-liner
 
-> **Crucible is outbound that learns: it predicts how prospects will react, sends tailored emails, monitors replies, and updates its buyer memory so every campaign gets sharper.**
+> **Crucible turns lead signals into sharper outbound: it ranks who to contact, explains why now, drafts signal-aware messages, monitors replies, and learns which signals and messages convert.**
 
 ## Track framing
 
 This fits the **10x outbound engine** track directly.
 
-Most outbound products help with enrichment, lead scoring, personalization, sequencing, or deliverability. Clay emphasizes enrichment, intent signals, account/contact scoring and personalized outbound; Apollo positions itself as an AI sales platform for prospecting, lead generation and deal automation; lemlist emphasizes multichannel outreach across email, LinkedIn and phone; Smartlead is heavily associated with cold-email deliverability and warmup. Crucible’s wedge is different: **prediction → real response → calibration → next cohort**. ([Clay][3])
+Most outbound products help with enrichment, lead scoring, personalization, sequencing, or deliverability. Clay emphasizes enrichment, intent signals, account/contact scoring and personalized outbound; Apollo positions itself around prospecting, buying intent and lead scoring; Gojiberry emphasizes high-intent signals, ICP filtering, relevant outreach, and tracking which signals/campaigns convert. Crucible’s wedge is different: **signal → message → real response → signal/buyer/message memory → next cohort**. ([Clay][3], [Gojiberry][19])
 
 ## Demo line
 
-> “Apollo helps you find prospects. Clay helps you enrich them. Smartlead helps you send. Crucible helps you learn what message actually works for each buyer type.”
+> “Apollo helps you find prospects. Clay helps you enrich them. Gojiberry helps you spot warm signals. Crucible helps you learn which signals and messages actually work for your offer.”
 
 Slightly safer version:
 
-> “Crucible makes the learning loop explicit: every email is an experiment, every reply updates the buyer model, and the next cohort uses that memory.”
+> “Crucible makes the learning loop explicit: every email is an experiment, every reply updates signal, buyer, and message memory, and the next cohort uses that memory.”
 
 ---
 
@@ -2369,3 +2399,4 @@ The winning product narrative:
 [16]: https://knowledge.workspace.google.com/admin/gmail/gmail-sending-limits-in-google-workspace "Gmail sending limits in Google Workspace  |  Google Workspace Help"
 [17]: https://elevenlabs.io/docs/eleven-agents/overview?utm_source=chatgpt.com "ElevenAgents | ElevenLabs Documentation"
 [18]: https://kiro.dev/docs/specs/?utm_source=chatgpt.com "Specs - IDE - Docs"
+[19]: https://gojiberry.ai/ "Gojiberry"

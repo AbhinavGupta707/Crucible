@@ -2,7 +2,7 @@
 
 Source spec: `MASTER SPEC.md`
 
-Project: Crucible - Outbound That Learns
+Project: Crucible - Signal-Led Outbound That Learns
 
 Purpose: this file is an execution-ready build plan for Codex, Claude Code, or any other coding agent. It compresses the product spec into concrete architecture, workstreams, file ownership, merge strategy, validation gates, and unresolved decisions. The goal is to let multiple agents work in parallel without needing to rediscover the product.
 
@@ -12,26 +12,28 @@ Last updated: 2026-05-09
 
 # 1. Executive Summary
 
-Crucible is a hackathon MVP for a closed-loop outbound engine. It does not just generate cold emails. It creates buyer archetype hypotheses, matches prospects to those archetypes, predicts likely objections, generates hypothesis-driven emails, drafts or sends them through Gmail, observes replies, parses actual outcomes, updates the buyer memory, and generates a better next cohort.
+Crucible is a hackathon MVP for a closed-loop, signal-led outbound engine. It does not just generate cold emails. It takes signal-enriched leads, ranks who matters now, explains why now, uses buyer memory to predict likely objections and message angles, generates hypothesis-driven signal-aware emails, drafts or sends them through Gmail, observes replies, parses actual outcomes, updates signal/buyer/message memory, and generates a better next signal cohort.
 
 The demo must prove one loop:
 
 ```text
-Offer -> archetypes -> prospect matching -> preflight prediction -> outbound email
+Offer + lead signals -> Signal Radar -> lead priority + why now
+-> Buyer Memory -> preflight prediction -> signal-aware outbound email
 -> draft/send or replay -> reply parsing -> predicted-vs-actual comparison
--> archetype v1 to v2 calibration -> improved next cohort email
+-> Signal Memory + Buyer Memory + Message Memory
+-> improved next signal cohort
 ```
 
 Winning narrative:
 
 ```text
-Outbound tools personalize. Crucible learns.
+Outbound tools find and personalize. Crucible learns which signals and messages work.
 ```
 
 Primary execution strategy:
 
 ```text
-1. Build the full UI and flow with seeded data first.
+1. Build the full signal-led UI and flow with seeded data first.
 2. Add database and repositories behind the seeded flow.
 3. Add schema-validated AI agents with cached fallbacks.
 4. Add Gmail as optional draft-first integration.
@@ -69,19 +71,21 @@ The MVP is done when a user can complete this path:
 
 ```text
 1. Enter a founder offer.
-2. Generate 8-12 buyer archetypes.
-3. Upload or load 20-30 CSV leads.
-4. Match every lead to an archetype.
-5. Generate preflight predictions for each lead.
-6. Generate outbound emails tied to explicit hypotheses.
-7. Review and approve emails before any Gmail action.
-8. Create Gmail drafts or send controlled test emails.
-9. Pull staged or real replies into the app.
-10. Classify replies using a fixed taxonomy.
-11. Compare predicted vs actual outcomes.
-12. Update at least one archetype from v1 to v2.
-13. Generate a visibly improved next-cohort email.
-14. Run the full demo in safe mode with no live integrations.
+2. Upload or load 20-30 signal-enriched CSV leads.
+3. Rank leads in Signal Radar using ICP fit, signal strength, freshness, archetype match, and message confidence.
+4. Explain "why this lead, why now" for priority leads.
+5. Generate 8-12 buyer memory archetypes.
+6. Match every lead to an archetype.
+7. Generate preflight predictions for each lead using signal + archetype.
+8. Generate signal-aware outbound emails tied to explicit hypotheses.
+9. Review and approve emails before any Gmail action.
+10. Create Gmail drafts or send controlled test emails.
+11. Pull staged or real replies into the app.
+12. Classify replies using a fixed taxonomy.
+13. Compare predicted vs actual outcomes.
+14. Update Signal Memory, Buyer Memory, and Message Memory.
+15. Generate a visibly improved next signal cohort with reprioritised leads and rewritten copy.
+16. Run the full demo in safe mode with no live integrations.
 ```
 
 The MVP must not build:
@@ -89,6 +93,7 @@ The MVP must not build:
 ```text
 Apollo or Clay API integration
 LinkedIn automation
+live signal scraping
 CRM sync
 billing
 team accounts
@@ -213,6 +218,78 @@ Make calibration the emotional climax.
 
 The product should feel like a founder cockpit, not a spam console.
 
+## Signal-Led Product Layer
+
+This pivot is now source-of-truth for all workstreams.
+
+The old buyer-archetype loop still exists, but it is no longer the first thing the product shows. The new MVP flow is:
+
+```text
+Offer + signal-enriched CSV
+-> Signal Radar ranks leads and explains why now
+-> Buyer Memory predicts objection and message angle
+-> Signal-to-Message Forge writes outreach around the signal
+-> Gmail draft/send or reply replay
+-> replies are parsed
+-> Signal Memory + Buyer Memory + Message Memory update
+-> Next Signal Cohort reprioritises leads and rewrites copy
+```
+
+Required CSV signal fields:
+
+```text
+signal_type
+signal_summary
+signal_source
+signal_date
+signal_strength
+signal_url
+intent_score
+icp_fit_score
+```
+
+Demo signal types:
+
+```text
+funding_round
+hiring_sales
+new_role
+posted_about_problem
+competitor_engagement
+product_launch
+community_activity
+website_change
+manual_trigger
+```
+
+Lead Priority Score:
+
+```text
+0.30 ICP fit
++ 0.25 signal strength
++ 0.20 signal freshness
++ 0.15 buyer archetype match
++ 0.10 message confidence
+```
+
+The calibration climax should update three memories:
+
+```text
+Signal Memory: which signal types produced replies.
+Buyer Memory: which archetypes objected and why.
+Message Memory: which angles and phrases worked.
+```
+
+Seeded demo learning:
+
+```text
+Prediction: funding_round is a strong signal.
+Actual: funding-round leads ignored us.
+Prediction: hiring_sales is a medium signal.
+Actual: hiring-SDR leads replied positively.
+Learning: prioritize hiring_sales signals and low-setup "we draft, you approve" language.
+```
+
 ---
 
 # 6. Target User Flow
@@ -247,7 +324,41 @@ Message angles to test
 Risky assumptions
 ```
 
-## Screen 2: Buyer Archetype Library
+## Screen 2: Signal Radar / Lead Queue
+
+This is the first GTM wow moment.
+
+Render a ranked lead queue from signal-enriched CSV data.
+
+Each row/card shows:
+
+```text
+Lead
+Company
+Role
+Signal type
+Signal strength
+Signal freshness
+ICP fit
+Buyer archetype
+Lead priority score
+Why now
+Recommended angle
+```
+
+Example:
+
+```text
+Sarah Chen, Founder at BrightOps
+Signal: hiring SDRs
+Freshness: 4 days ago
+ICP fit: 84
+Signal strength: 78
+Why now: scaling outbound team and likely feeling follow-up leakage
+Recommended angle: recover warm leads without adding SDR admin
+```
+
+## Screen 3: Buyer Memory
 
 Render 8-12 cards.
 
@@ -273,7 +384,7 @@ Cards appear as a generated buyer memory.
 At least one card later flips from v1 to v2 after calibration.
 ```
 
-## Screen 3: Prospect Inbox
+## Screen 4: Lead Detail / Why Now
 
 CSV columns:
 
@@ -289,12 +400,23 @@ notes
 trigger
 website
 linkedin_summary
+signal_type
+signal_summary
+signal_source
+signal_date
+signal_strength
+signal_url
+intent_score
+icp_fit_score
 ```
 
 Each prospect row shows:
 
 ```text
 Prospect
+Lead priority score
+Why this lead
+Why now
 Matched archetype
 Match confidence
 Matched signals
@@ -303,7 +425,20 @@ Recommended angle
 Risk flags
 ```
 
-## Screen 4: Outbound Forge
+Add a "Why This Lead, Why Now" detail panel:
+
+```text
+Why this lead:
+They are hiring SDRs and scaling outbound.
+
+Why this message:
+Their likely pain is follow-up leakage, not generic AI automation.
+
+What we are testing:
+Whether "recover warm leads" beats "automate follow-up."
+```
+
+## Screen 5: Signal-to-Message Forge
 
 For every email show:
 
@@ -332,7 +467,7 @@ Include opt-out line for external sends.
 Human approval required.
 ```
 
-## Screen 5: Campaign Monitor
+## Screen 6: Campaign Monitor
 
 Show replies or replayed replies.
 
@@ -356,7 +491,7 @@ Confidence: low
 Possible causes: timing, deliverability, weak relevance, wrong buyer, weak CTA
 ```
 
-## Screen 6: Calibration View
+## Screen 7: Learning Loop
 
 This is the main demo climax.
 
@@ -364,6 +499,8 @@ Show:
 
 ```text
 Predicted-vs-actual matrix
+Signal performance
+Message angle performance
 Accuracy by archetype
 Trigger reason
 Archetype v1 to v2 diff
@@ -380,7 +517,17 @@ Tool-Fatigued Operator v1 -> v2
 
 or another seeded archetype with a clear mismatch.
 
-## Screen 7: Next Cohort
+Required visible moment:
+
+```text
+Signal Memory updated:
+Hiring SDRs worked.
+Funding-round leads underperformed.
+Low-setup language beat AI automation.
+Next cohort reprioritised.
+```
+
+## Screen 8: Next Signal Cohort
 
 Show before and after:
 
@@ -592,6 +739,7 @@ Workspace has many Offers and GmailConnections.
 Offer has many ExperimentHypotheses, BuyerArchetypes, and Campaigns.
 BuyerArchetype has many BuyerArchetypeVersions.
 Prospect has many ProspectMatches and OutboundEmails.
+Prospect also carries MVP signal fields directly.
 Campaign has many CampaignCohorts.
 CampaignCohort has many OutboundEmails and CalibrationRuns.
 OutboundEmail has many EmailEvents and one optional ReplyAnalysis.
@@ -609,6 +757,25 @@ Store raw Gmail payloads only where needed for debugging.
 Use activeVersionId on BuyerArchetype so the UI can quickly render current memory.
 ```
 
+Minimum MVP signal fields on `Prospect`:
+
+```text
+signalType
+signalSummary
+signalSource
+signalDate
+signalStrength
+signalUrl
+intentScore
+icpFitScore
+signalFreshnessScore
+leadPriorityScore
+whyNow
+recommendedAngle
+```
+
+Do not create full live signal-source integrations for MVP. Future structured tables can include `LeadSignal`, `SignalPerformance`, and `SignalMemory`, but the hackathon version can store signal memory as JSON on calibration/next-cohort outputs if time is tight.
+
 Required seeded records:
 
 ```text
@@ -618,6 +785,7 @@ Required seeded records:
 8-12 v1 archetype versions
 20-30 prospects
 20-30 prospect matches
+20-30 scored lead signals embedded on prospects
 1 campaign
 1 cohort
 5-10 outbound emails
@@ -682,13 +850,15 @@ offer -> archetypes -> prospects -> predictions -> emails -> replies -> calibrat
 Each major demo action must map to a separate endpoint and button:
 
 ```text
-Build buyer memory      -> POST /api/offers/:offerId/archetypes/generate
-Match prospects         -> POST /api/prospects/:prospectId/match or cohort batch route
-Generate emails         -> POST /api/cohorts/:cohortId/generate-emails
-Replay replies          -> POST /api/demo/replay-replies
-Run calibration         -> POST /api/cohorts/:cohortId/calibrate
-Generate next cohort    -> POST /api/cohorts/:cohortId/next
-Poll Gmail replies      -> POST /api/gmail/poll-replies
+Build buyer memory       -> POST /api/offers/:offerId/archetypes/generate
+Upload/scored leads      -> POST /api/prospects/upload-csv
+Score Signal Radar       -> POST /api/prospects/score-signals or folded into upload
+Match prospects          -> POST /api/prospects/:prospectId/match or cohort batch route
+Generate emails          -> POST /api/cohorts/:cohortId/generate-emails
+Replay replies           -> POST /api/demo/replay-replies
+Run learning loop        -> POST /api/cohorts/:cohortId/calibrate
+Generate next signal cohort -> POST /api/cohorts/:cohortId/next
+Poll Gmail replies       -> POST /api/gmail/poll-replies
 ```
 
 Why:
@@ -730,16 +900,17 @@ Returns archetype cards.
 
 ```text
 Parses CSV.
-Validates required fields.
-Creates prospects.
-Returns parse summary and prospects.
+Validates required identity and signal fields.
+Creates prospects with embedded signal fields.
+Computes or queues signal score, freshness score, and lead priority score.
+Returns parse summary, ranked prospects, and warnings for weak/missing signals.
 ```
 
 `POST /api/prospects/:prospectId/match`
 
 ```text
 Matches one prospect to best archetype.
-Returns confidence, reasoning, signals, and risk flags.
+Returns confidence, reasoning, signal-aware matched signals, and risk flags.
 ```
 
 `POST /api/campaigns`
@@ -760,7 +931,7 @@ Defaults to cohortNumber 1 unless specified.
 
 ```text
 Runs preflight prediction for each prospect match in the cohort.
-Stores predicted outcome, objection, angle, confidence.
+Stores predicted outcome, objection, angle, signal contribution, and confidence.
 ```
 
 `POST /api/cohorts/:cohortId/generate-emails`
@@ -826,13 +997,13 @@ Updates suppression list for unsubscribe, hostile, bounce where applicable.
 ```text
 Computes accuracy and trigger rules.
 Runs Calibration Agent where needed.
-Creates new BuyerArchetypeVersion and PersonaUpdate.
+Creates Signal Memory updates, BuyerArchetypeVersion/PersonaUpdate, and Message Memory updates.
 ```
 
 `POST /api/cohorts/:cohortId/next`
 
 ```text
-Generates next cohort plan and rewritten email templates.
+Generates next signal cohort plan, reprioritised lead guidance, and rewritten email templates.
 ```
 
 `GET /api/demo/seed`
@@ -922,7 +1093,36 @@ dislikedPhrases
 likelyReplyPatterns
 ```
 
-## Agent 3: Prospect Matcher
+## Agent 3: Signal Scorer
+
+Scores lead signals against the offer before archetype matching.
+
+Input:
+
+```text
+offer
+prospect
+signal_type
+signal_summary
+signal_source
+signal_date
+signal_strength
+intent_score
+icp_fit_score
+```
+
+Output:
+
+```text
+signalRelevance
+signalFreshness
+whyNow
+suggestedAngle
+riskFlags
+leadPriorityScore
+```
+
+## Agent 4: Prospect Matcher
 
 Use deterministic scoring plus optional LLM judgement.
 
@@ -948,7 +1148,7 @@ matchedSignals
 riskFlags
 ```
 
-## Agent 4: Preflight Simulator
+## Agent 5: Preflight Simulator
 
 For each prospect and archetype pair, predict:
 
@@ -960,9 +1160,12 @@ bestAngle
 phrasesToUse
 phrasesToAvoid
 confidence
+signalContribution
 ```
 
-## Agent 5: Outreach Generator
+Prediction must use signal + archetype, not archetype alone.
+
+## Agent 6: Outreach Generator
 
 Generates:
 
@@ -980,6 +1183,8 @@ complianceFooter
 riskWarnings
 ```
 
+Every email must reference the signal naturally when a signal exists.
+
 Email hard checks:
 
 ```text
@@ -991,7 +1196,7 @@ no manipulative wording
 opt-out included when external_send=true
 ```
 
-## Agent 6: Response Parser
+## Agent 7: Response Parser
 
 Fixed taxonomy:
 
@@ -1022,7 +1227,7 @@ mismatchReason
 confidence
 ```
 
-## Agent 7: Calibration Agent
+## Agent 8: Calibration Agent
 
 Computes:
 
@@ -1033,6 +1238,8 @@ angle_performance_by_archetype
 CTA_performance
 phrases_to_avoid
 new_unpredicted_objections
+signal_performance_by_type
+message_angle_performance
 ```
 
 Triggers update if:
@@ -1061,9 +1268,13 @@ newPreferredAngles
 phrasesToUse
 phrasesToAvoid
 confidenceAfter
+signalMemoryUpdates
+messageMemoryUpdates
 ```
 
-## Agent 8: Next Cohort Generator
+Calibration must update Signal Memory, Buyer Memory, and Message Memory.
+
+## Agent 9: Next Cohort Generator
 
 Output:
 
@@ -1073,6 +1284,9 @@ changesFromPreviousCohort
 segmentsToDoubleDown
 segmentsToPause
 revisedMessageAngles
+signalTypesToDoubleDown
+signalTypesToPause
+reprioritisedLeadIds
 newEmailTemplates
 killCriterion
 successMetric
@@ -1083,6 +1297,17 @@ successMetric
 # 12. Scoring and Calibration Utilities
 
 Implement deterministic utilities so the demo is explainable and testable.
+
+`lib/scoring/lead-priority.ts`
+
+```text
+lead_priority_score =
+  0.30 * icp_fit
++ 0.25 * signal_strength
++ 0.20 * signal_freshness
++ 0.15 * buyer_archetype_match
++ 0.10 * message_confidence
+```
 
 `lib/scoring/reply-likelihood.ts`
 
@@ -1284,6 +1509,27 @@ Growth-focused founders respond to pipeline recovery more than time savings.
 Trust-first buyers need proof and human approval before automation language.
 ```
 
+Seed signals:
+
+```text
+Agency founder hiring SDRs
+Studio manager posted about missed follow-ups
+Founder raised seed round
+Competitor user commenting on LinkedIn
+Agency launching new service
+Wrong-person gatekeeper with weak signal
+```
+
+Seed signal mismatch:
+
+```text
+Prediction: funding_round = strong signal.
+Actual: funding-round leads ignored us.
+Prediction: hiring_sales = medium signal.
+Actual: hiring-SDR leads replied positively.
+Learning: hiring_sales is the better trigger for this offer.
+```
+
 Seed mismatch for calibration:
 
 ```text
@@ -1363,12 +1609,13 @@ Scaffold Next.js app with TypeScript.
 Create visual direction and global styles.
 Build offer intake page.
 Build run navigation.
-Build archetype library view.
-Build prospect inbox view.
-Build outbound forge view.
+Build Signal Radar / Lead Queue view.
+Build Buyer Memory view.
+Build Lead Detail / Why Now view.
+Build Signal-to-Message Forge view.
 Build campaign monitor view.
-Build calibration view.
-Build next cohort view.
+Build Learning Loop view.
+Build Next Signal Cohort view.
 Use seeded demo data first.
 Add demo safe mode toggle.
 Add loading, empty, and failure states.
@@ -1377,9 +1624,10 @@ Add loading, empty, and failure states.
 Acceptance criteria:
 
 ```text
-User can click through all seven screens with seeded data.
-Calibration page clearly shows predicted-vs-actual and v1 -> v2.
-Next cohort page clearly shows before/after rewrite.
+User can click through all signal-led screens with seeded data.
+Signal Radar clearly ranks leads and explains why now.
+Learning Loop clearly shows signal, buyer, and message memory updates.
+Next Signal Cohort page clearly shows reprioritised leads and before/after rewrite.
 No Gmail or live AI is required.
 Mobile layout does not break.
 ```
@@ -1387,7 +1635,7 @@ Mobile layout does not break.
 Suggested first task prompt:
 
 ```text
-Build the Crucible Next.js UI shell with seeded data only. Create the seven screens from IMPLEMENTATION_PLAN.md. Do not add API calls, AI calls, database code, or Gmail code. Keep demo safe mode visible and make calibration the climax.
+Build the Crucible Next.js UI shell with seeded data only. Create the signal-led screens from IMPLEMENTATION_PLAN.md: Offer Intake, Signal Radar, Buyer Memory, Lead Detail / Why Now, Signal-to-Message Forge, Campaign Monitor, Learning Loop, and Next Signal Cohort. Do not add API calls, AI calls, database code, or Gmail code. Keep demo safe mode visible and make Signal Memory + Buyer Memory + Message Memory calibration the climax.
 ```
 
 ## Workstream 2: Database, Repositories, and Seed Data
@@ -1419,7 +1667,7 @@ Create Prisma schema.
 Create database client helper.
 Create repositories for offers, archetypes, prospects, campaigns, emails, replies, calibration, suppression.
 Create deterministic seed script.
-Create sample leads CSV.
+Create sample signal-enriched leads CSV.
 Create sample replies JSON.
 Create cached AI output JSON.
 Create idempotent demo seed function.
@@ -1432,15 +1680,15 @@ Acceptance criteria:
 Prisma validates.
 Seed script creates a complete demo flow.
 Repositories can fetch one full run by offerId.
-CSV fixture has 20-30 leads.
-Seeded replies include at least one clear prediction mismatch.
+CSV fixture has 20-30 leads with signal_type, signal_summary, signal_source, signal_date, signal_strength, signal_url, intent_score, and icp_fit_score.
+Seeded replies include at least one buyer-memory mismatch and one signal-memory mismatch.
 No UI code is changed.
 ```
 
 Suggested first task prompt:
 
 ```text
-Implement the Prisma schema, repository layer, and deterministic demo seed data for Crucible. Follow IMPLEMENTATION_PLAN.md. Do not build UI or Gmail. Ensure the seed creates the full offer-to-calibration demo path.
+Implement the Prisma schema, repository layer, and deterministic signal-led demo seed data for Crucible. Follow IMPLEMENTATION_PLAN.md. Do not build UI or Gmail. Ensure the seed creates the full offer-to-signal-radar-to-calibration demo path.
 ```
 
 ## Workstream 3: Structured AI, Prompts, Workflows, and Scoring
@@ -1468,13 +1716,15 @@ prisma/**
 Tasks:
 
 ```text
-Create Zod schemas for all agent outputs.
+Create Zod schemas for all agent outputs, including Signal Scorer.
 Create provider adapter.
 Create structured generation helper with retry and cached fallback.
-Create prompts for all eight agents.
+Create prompts for the eight existing agents plus Signal Scorer.
 Create buildBuyerMemory workflow.
+Create scoreSignals workflow.
 Create generateCampaign workflow.
 Create monitorAndCalibrate workflow.
+Create lead priority score utility.
 Create match score utility.
 Create reply likelihood utility.
 Create prediction accuracy utility.
@@ -1490,14 +1740,15 @@ Acceptance criteria:
 All AI output schemas validate against cached fixture data.
 Malformed AI output is rejected.
 Schema failure retries once then falls back to cache.
-Scoring utilities have deterministic tests.
+Signal scoring and lead priority scoring have deterministic tests.
+Calibration outputs can update Signal Memory, Buyer Memory, and Message Memory.
 No database mutation happens inside AI functions.
 ```
 
 Suggested first task prompt:
 
 ```text
-Build the structured AI layer for Crucible. Create Zod schemas, prompts, provider adapter, cached fallback behavior, scoring utilities, and workflows. Do not edit UI, Prisma schema, or Gmail code.
+Build the structured AI layer for signal-led Crucible. Create Zod schemas, prompts, provider adapter, cached fallback behavior, Signal Scorer, lead priority scoring, memory-aware calibration utilities, and workflows. Do not edit UI, Prisma schema, or Gmail code.
 ```
 
 ## Workstream 4: Application APIs and Workflow Integration
@@ -1533,6 +1784,7 @@ Create response envelope helpers.
 Implement offer creation route.
 Implement archetype generation route.
 Implement CSV upload route.
+Implement signal scoring / lead priority route or fold signal scoring into CSV upload.
 Implement prospect matching route.
 Implement campaign and cohort routes.
 Implement preflight route.
@@ -1549,17 +1801,17 @@ Add integration tests for full safe-mode path.
 Acceptance criteria:
 
 ```text
-Safe-mode API path works from offer to next cohort.
+Safe-mode API path works from offer to Signal Radar to next signal cohort.
 All endpoints return standard envelopes.
 All endpoints validate input.
 Gmail routes are not required for safe-mode success.
-Integration test proves replayed replies trigger calibration.
+Integration test proves replayed replies trigger Signal Memory, Buyer Memory, and Message Memory calibration.
 ```
 
 Suggested first task prompt:
 
 ```text
-Implement the Next.js route handlers and API response helpers for Crucible's safe-mode workflow. Wire repositories and AI workflows together. Do not implement Gmail routes and do not edit UI components.
+Implement the Next.js route handlers and API response helpers for Crucible's signal-led safe-mode workflow. Wire repositories and AI workflows together. Do not implement Gmail routes and do not edit UI components.
 ```
 
 ## Workstream 5: Gmail, Compliance, and Live Demo Mode
