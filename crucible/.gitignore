@@ -1,0 +1,8 @@
+# TypeScript build info
+*.tsbuildinfo
+
+# Next.js build output
+.next/
+
+# Test coverage
+coverage/
