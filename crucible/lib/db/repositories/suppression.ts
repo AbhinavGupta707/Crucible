@@ -1,4 +1,4 @@
-import { prisma } from "../prisma";
+﻿import { prisma } from "../prisma";
 
 export async function isSuppressed(workspaceId: string, email: string) {
   const hit = await prisma.suppressionEntry.findUnique({
