@@ -1,19 +1,123 @@
+"use client";
+
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { AnimatePresence, motion } from "framer-motion";
+import {
+  MessageSimulationIntake,
+  IntakeValues,
+} from "@/components/message-simulation-intake";
+import { SimulationLab } from "@/components/simulation-lab";
+import { OutreachRewritePreview } from "@/components/outreach-rewrite-preview";
+import {
+  SimulationProgressRail,
+  SimStage,
+} from "@/components/simulation-progress-rail";
+
+const EMPTY: IntakeValues = {
+  productIdea: "",
+  targetBuyer: "",
+  coldEmail: "",
+  desiredReply: "",
+};
+
 export default function Home() {
-  const safeMode = process.env.DEMO_SAFE_MODE !== "false";
-  const cachedAi = process.env.USE_CACHED_AI !== "false";
+  const router = useRouter();
+  const [stage, setStage] = useState<SimStage>("intake");
+  const [intake, setIntake] = useState<IntakeValues>(EMPTY);
+
+  const onRun = (values: IntakeValues) => {
+    setIntake(values);
+    setStage("simulating");
+  };
+
+  const onSimComplete = () => setStage("rewrite");
+  const onAbort = () => setStage("intake");
+  const onRunAgain = () => setStage("simulating");
+  const onContinue = () => router.push("/runs/demo-offer/prospects");
 
   return (
-    <main className="flex min-h-screen flex-col items-start justify-center gap-6 p-12 font-sans">
-      <h1 className="text-3xl font-semibold tracking-tight">Crucible</h1>
-      <p className="max-w-xl text-sm text-neutral-500">
-        Outbound that learns. Scaffold only — UI, database, AI, and Gmail
-        will be wired in by their respective workstreams. See
-        IMPLEMENTATION_PLAN.md.
-      </p>
-      <ul className="text-xs text-neutral-500">
-        <li>DEMO_SAFE_MODE: {safeMode ? "true" : "false"}</li>
-        <li>USE_CACHED_AI: {cachedAi ? "true" : "false"}</li>
-      </ul>
+    <main className="min-h-screen w-full">
+      <TopNav />
+      <div className="px-6 sm:px-10 lg:px-14 pt-6">
+        <SimulationProgressRail stage={stage} />
+      </div>
+
+      <AnimatePresence mode="wait">
+        {stage === "intake" ? (
+          <motion.div
+            key="intake"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.3 }}
+          >
+            <MessageSimulationIntake
+              initial={intake.productIdea ? intake : undefined}
+              onRun={onRun}
+            />
+          </motion.div>
+        ) : null}
+
+        {stage === "simulating" ? (
+          <motion.div
+            key="sim"
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.35 }}
+          >
+            <SimulationLab
+              coldEmail={intake.coldEmail}
+              productIdea={intake.productIdea}
+              targetBuyer={intake.targetBuyer}
+              onComplete={onSimComplete}
+              onAbort={onAbort}
+            />
+          </motion.div>
+        ) : null}
+
+        {stage === "rewrite" ? (
+          <motion.div
+            key="rewrite"
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.35 }}
+          >
+            <OutreachRewritePreview
+              onRunAgain={onRunAgain}
+              onContinue={onContinue}
+            />
+          </motion.div>
+        ) : null}
+      </AnimatePresence>
     </main>
+  );
+}
+
+function TopNav() {
+  return (
+    <header className="w-full px-6 sm:px-10 lg:px-14 pt-6">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-amber-300 via-amber-500 to-orange-600 flex items-center justify-center text-[10px] font-bold text-black/80 amber-glow">
+            C
+          </div>
+          <div>
+            <div className="text-sm font-semibold tracking-tight">Crucible</div>
+            <div className="text-[10px] text-dim uppercase tracking-widest">
+              Self-improving outbound
+            </div>
+          </div>
+        </div>
+        <div className="hidden md:flex items-center gap-2">
+          <span className="chip">Hypothesis-first</span>
+          <span className="chip chip-cyan">
+            <span className="pulse-dot pulse-dot--cyan" /> Demo safe-mode
+          </span>
+        </div>
+      </div>
+    </header>
   );
 }
