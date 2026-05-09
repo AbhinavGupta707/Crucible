@@ -7,6 +7,7 @@ import {
   Inbox,
   Library,
   LineChart,
+  Mail,
   RefreshCcw,
   Send,
   Sparkles,
@@ -40,12 +41,21 @@ export function RunNav({ offerId, title }: { offerId: string; title: string }) {
           </div>
           <h1 className="mt-1 text-xl font-semibold tracking-tight sm:text-2xl">{title}</h1>
         </div>
-        <Link
-          href={`/runs/${offerId}`}
-          className="text-xs text-white/50 underline-offset-4 hover:text-white/80 hover:underline"
-        >
-          Run overview
-        </Link>
+        <div className="flex items-center gap-3">
+          <Link
+            href="/settings/gmail"
+            className="inline-flex items-center gap-1.5 text-xs text-white/50 underline-offset-4 hover:text-white/80 hover:underline"
+          >
+            <Mail className="h-3.5 w-3.5" />
+            Gmail
+          </Link>
+          <Link
+            href={`/runs/${offerId}`}
+            className="text-xs text-white/50 underline-offset-4 hover:text-white/80 hover:underline"
+          >
+            Run overview
+          </Link>
+        </div>
       </div>
       <nav className="surface flex overflow-x-auto p-1.5 scrollbar-thin">
         {STEPS.map(({ slug, label, icon: Icon, n, highlight }) => {

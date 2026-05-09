@@ -2,14 +2,40 @@
 
 import Link from "next/link";
 import { useMemo, useState } from "react";
-import { ArrowRight, PlayCircle } from "lucide-react";
-import { replyAnalyses } from "./seed/data";
+import { ArrowRight, MailSearch, PlayCircle } from "lucide-react";
+import { outboundEmails, replyAnalyses } from "./seed/data";
 import { ReplyCard } from "./reply-card";
+
+type GmailPolledReply = {
+  messageId: string;
+  fromEmail: string;
+  fromName?: string;
+  subject: string;
+  receivedAt: string;
+  plainText: string;
+  snippet: string;
+};
+
+type GmailReplyAnalysis = {
+  emailId: string | null;
+  outcome: string;
+  sentiment: string;
+  objectionType: string | null;
+  volunteeredInfo: string[];
+  predictedWasCorrect: boolean;
+  mismatchReason: string | null;
+  parserConfidence: number;
+};
 
 export function CampaignMonitor({ offerId }: { offerId: string }) {
   const [replayed, setReplayed] = useState(false);
+  const [gmailBusy, setGmailBusy] = useState(false);
+  const [gmailReplies, setGmailReplies] = useState<GmailPolledReply[]>([]);
+  const [gmailAnalyses, setGmailAnalyses] = useState<GmailReplyAnalysis[]>([]);
+  const [gmailMessage, setGmailMessage] = useState<string | null>(null);
 
   const replies = useMemo(() => (replayed ? replyAnalyses : []), [replayed]);
+  const firstApproved = outboundEmails.find((email) => email.approved);
   const summary = useMemo(() => {
     if (replies.length === 0) return null;
     const correct = replies.filter((r) => r.predictionWasCorrect).length;
@@ -23,6 +49,46 @@ export function CampaignMonitor({ offerId }: { offerId: string }) {
       accuracy: correct / total,
     };
   }, [replies]);
+
+  async function pollGmailReplies() {
+    setGmailBusy(true);
+    setGmailMessage(null);
+    try {
+      const res = await fetch("/api/gmail/poll-replies", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          newerThanDays: 7,
+          maxMessages: 10,
+          analyze: true,
+          prediction: firstApproved
+            ? {
+                emailId: firstApproved.id,
+                predictedObjection: firstApproved.predictedObjection,
+                predictedOutcome: "positive",
+              }
+            : undefined,
+        }),
+      });
+      const json = await res.json();
+      if (!json.ok) {
+        throw new Error(json.error?.message ?? "Gmail poll failed.");
+      }
+      setGmailReplies(json.data?.replies ?? []);
+      setGmailAnalyses(json.data?.analyzedReplies ?? []);
+      const warnings = Array.isArray(json.warnings) ? json.warnings : [];
+      setGmailMessage(
+        warnings[0] ??
+          `Polled Gmail: ${json.data?.scannedCount ?? 0} messages scanned, ${
+            json.data?.replies?.length ?? 0
+          } replies found.`,
+      );
+    } catch (err) {
+      setGmailMessage(err instanceof Error ? err.message : String(err));
+    } finally {
+      setGmailBusy(false);
+    }
+  }
 
   return (
     <div className="space-y-5">
@@ -47,8 +113,35 @@ export function CampaignMonitor({ offerId }: { offerId: string }) {
               Run learning loop <ArrowRight className="h-4 w-4" />
             </Link>
           )}
+          <button
+            type="button"
+            onClick={() => void pollGmailReplies()}
+            disabled={gmailBusy}
+            className="btn-secondary disabled:cursor-not-allowed disabled:opacity-45"
+          >
+            <MailSearch className="h-4 w-4" />
+            {gmailBusy ? "Polling..." : "Poll Gmail replies"}
+          </button>
         </div>
       </div>
+
+      {gmailMessage ? (
+        <div className="surface border-l-4 border-plasma-400/50 px-4 py-3 text-sm text-white/70">
+          {gmailMessage}
+        </div>
+      ) : null}
+
+      {gmailReplies.length > 0 ? (
+        <section className="grid gap-4 lg:grid-cols-2">
+          {gmailReplies.map((reply, index) => (
+            <LiveGmailReply
+              key={reply.messageId}
+              reply={reply}
+              analysis={gmailAnalyses[index]}
+            />
+          ))}
+        </section>
+      ) : null}
 
       {summary ? (
         <div className="surface grid grid-cols-2 gap-px overflow-hidden bg-white/5 sm:grid-cols-4">
@@ -84,6 +177,52 @@ export function CampaignMonitor({ offerId }: { offerId: string }) {
         </div>
       ) : null}
     </div>
+  );
+}
+
+function LiveGmailReply({
+  reply,
+  analysis,
+}: {
+  reply: GmailPolledReply;
+  analysis?: GmailReplyAnalysis;
+}) {
+  return (
+    <article className="surface p-5">
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <div className="label">Gmail reply</div>
+          <h3 className="mt-1 text-sm font-semibold text-white/90">
+            {reply.fromName ?? reply.fromEmail}
+          </h3>
+          <p className="mt-0.5 text-xs text-white/40">{reply.subject}</p>
+        </div>
+        {analysis ? (
+          <span className={analysis.predictedWasCorrect ? "chip-good" : "chip-ember"}>
+            {analysis.predictedWasCorrect ? "Prediction matched" : "Mismatch"}
+          </span>
+        ) : null}
+      </div>
+      <p className="mt-3 whitespace-pre-line text-sm leading-relaxed text-white/75">
+        {reply.plainText || reply.snippet}
+      </p>
+      {analysis ? (
+        <div className="mt-4 grid gap-3 border-t border-white/5 pt-4 text-xs sm:grid-cols-3">
+          <Stat label="Outcome" value={analysis.outcome.replace(/_/g, " ")} />
+          <Stat
+            label="Objection"
+            value={(analysis.objectionType ?? "none").replace(/_/g, " ")}
+          />
+          <Stat
+            label="Parser confidence"
+            value={`${Math.round(analysis.parserConfidence * 100)}%`}
+          />
+        </div>
+      ) : null}
+      {analysis?.mismatchReason ? (
+        <p className="mt-3 text-xs text-signal-amber">{analysis.mismatchReason}</p>
+      ) : null}
+    </article>
   );
 }
 

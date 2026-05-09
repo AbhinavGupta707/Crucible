@@ -2,6 +2,7 @@ import { type NextRequest } from "next/server";
 import { z } from "zod";
 import { GmailNotConnectedError } from "../../../../lib/gmail/client";
 import { pollReplies } from "../../../../lib/gmail/poll";
+import { parseReply } from "../../../../lib/ai/workflows/parse-reply";
 import { fail, ok } from "../../../../lib/gmail/response";
 import { gmailIsConfigured } from "../../../../lib/gmail/safe-mode";
 import { resolveWorkspaceId } from "../../../../lib/gmail/workspace";
@@ -14,6 +15,14 @@ const inputSchema = z.object({
   threadIds: z.array(z.string().min(1)).optional(),
   newerThanDays: z.number().int().min(1).max(30).optional(),
   maxMessages: z.number().int().min(1).max(100).optional(),
+  analyze: z.boolean().optional(),
+  prediction: z
+    .object({
+      emailId: z.string().min(1).optional(),
+      predictedOutcome: z.string().min(1).optional(),
+      predictedObjection: z.string().min(1).optional(),
+    })
+    .optional(),
 });
 
 export async function POST(req: NextRequest) {
@@ -53,7 +62,12 @@ export async function POST(req: NextRequest) {
         [`Gmail poll soft-failed: ${result.reason} - ${result.message}`],
       );
     }
-    return ok({ ...result.data, gmailConfigured: true });
+    const analyzedReplies = parsed.data.analyze
+      ? result.data.replies.map((reply) =>
+          analyzeGmailReply(reply.plainText || reply.snippet, parsed.data.prediction),
+        )
+      : [];
+    return ok({ ...result.data, gmailConfigured: true, analyzedReplies });
   } catch (err) {
     if (err instanceof GmailNotConnectedError) {
       return ok(
@@ -68,4 +82,36 @@ export async function POST(req: NextRequest) {
       ],
     );
   }
+}
+
+function analyzeGmailReply(
+  rawText: string,
+  prediction: z.infer<typeof inputSchema>["prediction"],
+) {
+  const parsed = parseReply(rawText);
+  const predicted = (
+    prediction?.predictedObjection ??
+    prediction?.predictedOutcome ??
+    ""
+  ).toLowerCase();
+  const actual = (parsed.objectionType ?? parsed.outcome).toLowerCase();
+  const predictedWasCorrect =
+    predicted.length > 0 &&
+    (predicted.includes(actual) || actual.includes(predicted));
+
+  return {
+    emailId: prediction?.emailId ?? null,
+    outcome: parsed.outcome,
+    sentiment: parsed.sentiment,
+    objectionType: parsed.objectionType,
+    funnelStage: parsed.funnelStage,
+    volunteeredInfo: parsed.volunteeredInfo,
+    predictedWasCorrect,
+    mismatchReason: predictedWasCorrect
+      ? null
+      : `Predicted ${prediction?.predictedObjection ?? prediction?.predictedOutcome ?? "unknown"}; observed ${
+          parsed.objectionType ?? parsed.outcome
+        }.`,
+    parserConfidence: parsed.confidence,
+  };
 }

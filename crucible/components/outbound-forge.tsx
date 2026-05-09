@@ -2,9 +2,10 @@
 
 import Link from "next/link";
 import { useMemo, useState } from "react";
-import { ArrowRight, AlertTriangle, CheckCircle2, FileText, Mail } from "lucide-react";
+import { ArrowRight, AlertTriangle, CheckCircle2, FileText, Mail, Send } from "lucide-react";
 import { archetypes, outboundEmails, prospects } from "./seed/data";
 import { HypothesisPill } from "./hypothesis-pill";
+import { GmailConnectCard } from "./gmail-connect-card";
 
 function wordCount(s: string) {
   return s.trim().split(/\s+/).filter(Boolean).length;
@@ -12,6 +13,12 @@ function wordCount(s: string) {
 
 export function OutboundForge({ offerId }: { offerId: string }) {
   const [emails, setEmails] = useState(outboundEmails);
+  const [testRecipients, setTestRecipients] = useState("");
+  const [gmailBusy, setGmailBusy] = useState<
+    "draft" | "send" | "reply" | null
+  >(null);
+  const [gmailMessage, setGmailMessage] = useState<string | null>(null);
+  const [sentEmailIds, setSentEmailIds] = useState<string[]>([]);
 
   const byProspect = useMemo(() => {
     const map = new Map(prospects.map((p) => [p.id, p]));
@@ -23,6 +30,7 @@ export function OutboundForge({ offerId }: { offerId: string }) {
   }, []);
 
   const approvedCount = emails.filter((e) => e.approved).length;
+  const approvedEmails = emails.filter((e) => e.approved);
 
   function toggleApprove(id: string) {
     setEmails((all) =>
@@ -36,6 +44,131 @@ export function OutboundForge({ offerId }: { offerId: string }) {
           : e,
       ),
     );
+  }
+
+  async function createGmailDrafts() {
+    if (approvedEmails.length === 0) {
+      setGmailMessage("Approve one generated email first.");
+      return;
+    }
+    const recipients = parseRecipientList(testRecipients);
+    if (recipients.length === 0) {
+      setGmailMessage("Add at least one controlled test recipient or plus alias.");
+      return;
+    }
+
+    setGmailBusy("draft");
+    setGmailMessage(null);
+    try {
+      const res = await fetch("/api/gmail/create-drafts", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          emails: approvedEmails.map((email, index) =>
+            toApprovedEmail(email, pickRecipient(recipients, index)),
+          ),
+        }),
+      });
+      const json = await res.json();
+      if (!json.ok) {
+        throw new Error(json.error?.message ?? "Draft creation failed.");
+      }
+      const failed = json.data?.failed?.[0];
+      if (failed) {
+        throw new Error(`${failed.reason}: ${failed.message}`);
+      }
+      setEmails((all) =>
+        all.map((email) =>
+          approvedEmails.some((approved) => approved.id === email.id)
+            ? { ...email, status: "drafted_in_gmail" }
+            : email,
+        ),
+      );
+      setGmailMessage(
+        `Created ${json.data?.created?.length ?? 0} Gmail drafts for controlled test recipients.`,
+      );
+    } catch (err) {
+      setGmailMessage(err instanceof Error ? err.message : String(err));
+    } finally {
+      setGmailBusy(null);
+    }
+  }
+
+  async function sendApprovedTestCohort() {
+    if (approvedEmails.length === 0) {
+      setGmailMessage("Approve one generated email first.");
+      return;
+    }
+    const recipients = parseRecipientList(testRecipients);
+    if (recipients.length === 0) {
+      setGmailMessage("Add at least one controlled test recipient or plus alias.");
+      return;
+    }
+
+    setGmailBusy("send");
+    setGmailMessage(null);
+    const sentIds: string[] = [];
+    const failures: string[] = [];
+    try {
+      for (let index = 0; index < approvedEmails.length; index += 1) {
+        const email = approvedEmails[index]!;
+        const res = await fetch("/api/gmail/send-approved", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            email: toApprovedEmail(email, pickRecipient(recipients, index)),
+          }),
+        });
+        const json = await res.json();
+        if (json.ok) sentIds.push(email.id);
+        else failures.push(`${email.id}: ${json.error?.message ?? "Send failed."}`);
+      }
+      setEmails((all) =>
+        all.map((email) =>
+          sentIds.includes(email.id) ? { ...email, status: "sent" } : email,
+        ),
+      );
+      setSentEmailIds(sentIds);
+      setGmailMessage(
+        failures.length === 0
+          ? `Sent ${sentIds.length} approved test emails.`
+          : `Sent ${sentIds.length}; blocked/failed ${failures.length}. ${failures[0]}`,
+      );
+    } catch (err) {
+      setGmailMessage(err instanceof Error ? err.message : String(err));
+    } finally {
+      setGmailBusy(null);
+    }
+  }
+
+  async function triggerTestReplies() {
+    const recipients = parseRecipientList(testRecipients);
+    setGmailBusy("reply");
+    setGmailMessage(null);
+    try {
+      const res = await fetch("/api/gmail/trigger-test-replies", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          recipients,
+          sentEmailIds,
+          scenario: "alias-personas",
+        }),
+      });
+      const json = await res.json();
+      if (!json.ok) {
+        throw new Error(json.error?.message ?? "Reply simulator trigger failed.");
+      }
+      const warnings = json.data?.warnings ?? [];
+      setGmailMessage(
+        warnings[0] ??
+          `Triggered reply simulator; reported ${json.data?.replied ?? 0} replies.`,
+      );
+    } catch (err) {
+      setGmailMessage(err instanceof Error ? err.message : String(err));
+    } finally {
+      setGmailBusy(null);
+    }
   }
 
   return (
@@ -52,18 +185,86 @@ export function OutboundForge({ offerId }: { offerId: string }) {
           </p>
         </div>
         <div className="flex flex-col gap-2 sm:flex-row">
-          <button
-            className="btn-secondary"
-            disabled
-            title="Workstream 5 wires the optional Gmail draft creation"
-          >
-            <FileText className="h-4 w-4" /> Create Gmail drafts
-          </button>
+          <a href="#gmail-live-controls" className="btn-secondary">
+            <FileText className="h-4 w-4" /> Gmail live controls
+          </a>
           <Link href={`/runs/${offerId}/monitor`} className="btn-primary">
             Open monitor <ArrowRight className="h-4 w-4" />
           </Link>
         </div>
       </div>
+
+      <section
+        id="gmail-live-controls"
+        className="grid gap-4 lg:grid-cols-[0.9fr_1.1fr]"
+      >
+        <GmailConnectCard />
+        <div className="surface p-5">
+          <div className="label">Controlled Gmail live mode</div>
+          <h3 className="mt-1 text-base font-semibold text-white/90">
+            Run the controlled sender-to-receiver proof
+          </h3>
+          <p className="mt-2 text-sm text-white/55">
+            Drafts and sends use approved emails only. Live sends still require
+            <code className="mx-1">DEMO_SAFE_MODE=false</code>, a connected Gmail account, and an allowlisted recipient.
+          </p>
+          <div className="mt-4 flex flex-col gap-3">
+            <input
+              type="text"
+              value={testRecipients}
+              onChange={(event) => setTestRecipients(event.target.value)}
+              placeholder="receiver+ops@example.com, receiver+pricing@example.com"
+              className="min-w-0 rounded-lg border border-white/10 bg-ink-900 px-3 py-2 text-sm text-white outline-none transition placeholder:text-white/30 focus:border-ember-400/60"
+            />
+            <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-4">
+              <button
+                type="button"
+                onClick={() => void createGmailDrafts()}
+                disabled={gmailBusy !== null || approvedEmails.length === 0}
+                className="btn-secondary disabled:cursor-not-allowed disabled:opacity-45"
+              >
+                <FileText className="h-4 w-4" />
+                {gmailBusy === "draft" ? "Creating..." : "Create Gmail drafts"}
+              </button>
+              <button
+                type="button"
+                onClick={() => void sendApprovedTestCohort()}
+                disabled={gmailBusy !== null || approvedEmails.length === 0}
+                className="btn-primary disabled:cursor-not-allowed disabled:opacity-45"
+              >
+                <Send className="h-4 w-4" />
+                {gmailBusy === "send" ? "Sending..." : "Send approved test cohort"}
+              </button>
+              <button
+                type="button"
+                onClick={() => void triggerTestReplies()}
+                disabled={gmailBusy !== null}
+                className="btn-secondary disabled:cursor-not-allowed disabled:opacity-45"
+              >
+                <Mail className="h-4 w-4" />
+                {gmailBusy === "reply" ? "Triggering..." : "Trigger test replies"}
+              </button>
+              <Link href={`/runs/${offerId}/monitor`} className="btn-secondary">
+                <Mail className="h-4 w-4" /> Poll Gmail replies
+              </Link>
+            </div>
+          </div>
+          {approvedEmails.length > 0 ? (
+            <p className="mt-3 text-xs text-white/45">
+              {approvedEmails.length} approved emails ready. Recipients are assigned in order and reused if fewer aliases are supplied.
+            </p>
+          ) : (
+            <p className="mt-3 text-xs text-signal-amber">
+              Approve one email below before using Gmail live mode.
+            </p>
+          )}
+          {gmailMessage ? (
+            <p className="mt-3 rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-xs text-white/70">
+              {gmailMessage}
+            </p>
+          ) : null}
+        </div>
+      </section>
 
       <div className="grid gap-4 lg:grid-cols-2">
         {emails.map((e) => {
@@ -150,6 +351,34 @@ export function OutboundForge({ offerId }: { offerId: string }) {
       </div>
     </div>
   );
+}
+
+function parseRecipientList(value: string): string[] {
+  return value
+    .split(",")
+    .map((recipient) => recipient.trim())
+    .filter(Boolean);
+}
+
+function pickRecipient(recipients: string[], index: number): string {
+  return recipients[index % recipients.length]!;
+}
+
+function toApprovedEmail(
+  email: (typeof outboundEmails)[number],
+  recipient: string,
+) {
+  const prospect = prospects.find((p) => p.id === email.prospectId);
+  return {
+    emailId: email.id,
+    to: {
+      email: recipient,
+      name: prospect ? `${prospect.firstName} ${prospect.lastName}` : undefined,
+    },
+    subject: email.subject,
+    body: email.body,
+    approved: email.approved,
+  };
 }
 
 function Stat({ label, value, tone }: { label: string; value: string; tone?: string }) {
