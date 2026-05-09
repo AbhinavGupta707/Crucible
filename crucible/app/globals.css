@@ -1,0 +1,92 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html,
+  body {
+    background: #070A12;
+    color: #E6ECFF;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  body {
+    background-image:
+      radial-gradient(1200px 600px at 80% -10%, rgba(91, 211, 255, 0.08), transparent 60%),
+      radial-gradient(900px 500px at -10% 110%, rgba(255, 138, 42, 0.06), transparent 60%),
+      radial-gradient(circle at 1px 1px, rgba(255, 255, 255, 0.04) 1px, transparent 0);
+    background-size: auto, auto, 22px 22px;
+    background-attachment: fixed;
+    min-height: 100vh;
+  }
+
+  ::selection {
+    background: rgba(91, 211, 255, 0.35);
+    color: #fff;
+  }
+}
+
+@layer components {
+  .surface {
+    @apply rounded-2xl border border-white/5 bg-ink-900/70 backdrop-blur-sm;
+  }
+  .surface-raised {
+    @apply rounded-2xl border border-white/10 bg-ink-800/80 backdrop-blur-sm shadow-glow;
+  }
+  .chip {
+    @apply inline-flex items-center gap-1 rounded-full border border-white/10 bg-white/5 px-2.5 py-0.5 text-xs font-medium text-white/70;
+  }
+  .chip-good {
+    @apply chip border-signal-green/30 bg-signal-green/10 text-signal-green;
+  }
+  .chip-warn {
+    @apply chip border-signal-amber/30 bg-signal-amber/10 text-signal-amber;
+  }
+  .chip-bad {
+    @apply chip border-signal-red/30 bg-signal-red/10 text-signal-red;
+  }
+  .chip-info {
+    @apply chip border-plasma-400/30 bg-plasma-400/10 text-plasma-300;
+  }
+  .chip-ember {
+    @apply chip border-ember-400/30 bg-ember-400/10 text-ember-400;
+  }
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2 text-sm font-medium transition active:scale-[0.98] disabled:opacity-50 disabled:pointer-events-none;
+  }
+  .btn-primary {
+    @apply btn bg-ember-500 text-ink-950 hover:bg-ember-400 shadow-ember;
+  }
+  .btn-secondary {
+    @apply btn border border-white/10 bg-white/5 text-white hover:bg-white/10;
+  }
+  .btn-ghost {
+    @apply btn text-white/70 hover:text-white hover:bg-white/5;
+  }
+  .label {
+    @apply text-xs uppercase tracking-[0.14em] text-white/40 font-medium;
+  }
+  .field {
+    @apply w-full rounded-xl border border-white/10 bg-ink-900/60 px-4 py-3 text-sm text-white placeholder:text-white/30 outline-none focus:border-plasma-400/60 focus:ring-2 focus:ring-plasma-400/20 transition;
+  }
+  .divider-glow {
+    background: linear-gradient(90deg, transparent, rgba(91, 211, 255, 0.4), transparent);
+    height: 1px;
+  }
+}
+
+@keyframes pulse-soft {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.55; }
+}
+.animate-pulse-soft { animation: pulse-soft 2.4s ease-in-out infinite; }
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+.shimmer {
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.06), transparent);
+  background-size: 200% 100%;
+  animation: shimmer 2.4s linear infinite;
+}
