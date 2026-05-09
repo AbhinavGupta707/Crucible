@@ -18,6 +18,12 @@ coverage/
 
 # Local tool state
 .claude/
+AGENTS.md
+CLAUDE.md
+IMPLEMENTATION_PLAN.md
+MASTER SPEC.md
+crucible/AGENTS.md
+crucible/CLAUDE.md
 
 # Logs
 npm-debug.log*
