@@ -29,7 +29,7 @@ export async function generatePreflight(
       warnings.push(`Prospect not found or out-of-scope: ${id}`);
       continue;
     }
-    const match: ProspectMatch | undefined = matchesRepo.findByProspect(id);
+    const match: ProspectMatch | null = matchesRepo.findByProspect(id);
     if (!match) {
       warnings.push(`No match for prospect: ${id}`);
       continue;

@@ -28,7 +28,7 @@ export function CampaignMonitor({ offerId }: { offerId: string }) {
     <div className="space-y-5">
       <div className="surface flex flex-col gap-3 p-5 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <div className="label">Campaign monitor · cohort 1</div>
+          <div className="label">Reply monitor - Signal Cohort 1</div>
           <h2 className="mt-1 text-lg font-semibold">
             {replayed ? `${replies.length} replies parsed` : "No replies yet"}
           </h2>
@@ -44,7 +44,7 @@ export function CampaignMonitor({ offerId }: { offerId: string }) {
             </button>
           ) : (
             <Link href={`/runs/${offerId}/calibration`} className="btn-primary">
-              Run calibration <ArrowRight className="h-4 w-4" />
+              Run learning loop <ArrowRight className="h-4 w-4" />
             </Link>
           )}
         </div>
@@ -72,14 +72,14 @@ export function CampaignMonitor({ offerId }: { offerId: string }) {
       {summary ? (
         <div className="surface flex flex-col items-start gap-2 border-l-4 border-ember-400/60 p-5 text-sm text-white/75 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <div className="text-ember-400">Calibration trigger fired</div>
+            <div className="text-ember-400">Learning trigger fired</div>
             <p className="mt-1 max-w-xl">
               The Tool-Fatigued Operator archetype produced 4 implementation-objection replies vs a
               predicted pricing objection. Accuracy below 65% on a sent-count of 6.
             </p>
           </div>
           <Link href={`/runs/${offerId}/calibration`} className="btn-primary shrink-0">
-            See calibration <ArrowRight className="h-4 w-4" />
+            See learning loop <ArrowRight className="h-4 w-4" />
           </Link>
         </div>
       ) : null}
@@ -106,7 +106,7 @@ function EmptyState() {
         <h3 className="text-base font-medium text-white/85">Waiting on replies</h3>
         <p className="text-sm text-white/55">
           In Demo Safe Mode, replies are seeded. Click <strong className="text-white/80">Replay seeded
-          replies</strong> to feed them through the parser and unlock the calibration moment.
+          replies</strong> to feed them through the parser and unlock the learning-loop moment.
         </p>
       </div>
     </div>

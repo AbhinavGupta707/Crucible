@@ -1,4 +1,6 @@
-﻿import { prisma } from "../prisma";
+import { prisma } from "../prisma";
+import { nanoid } from "nanoid";
+import { getStore } from "../store";
 
 export async function isSuppressed(workspaceId: string, email: string) {
   const hit = await prisma.suppressionEntry.findUnique({
@@ -39,3 +41,20 @@ export async function listSuppression(workspaceId: string) {
     orderBy: { createdAt: "desc" },
   });
 }
+
+export const suppressionRepo = {
+  add(email: string, reason: string) {
+    const entry = {
+      id: `supp_${nanoid(8)}`,
+      email,
+      reason: reason as "unsubscribe" | "hostile" | "bounce" | "manual",
+      createdAt: new Date().toISOString(),
+    };
+    getStore().suppression.set(email.toLowerCase(), entry);
+    return entry;
+  },
+
+  isSuppressed(email: string) {
+    return getStore().suppression.has(email.toLowerCase());
+  },
+};

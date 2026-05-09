@@ -26,7 +26,7 @@ function titleScore(prospect: Prospect, archetype: BuyerArchetype): number {
 }
 
 function segmentScore(prospect: Prospect, archetype: BuyerArchetype): number {
-  const seg = archetype.segment.toLowerCase();
+  const seg = (archetype.segment ?? "").toLowerCase();
   const ind = prospect.industry.toLowerCase();
   const company = prospect.company.toLowerCase();
   if (seg.split(/\s+/).some((tok) => tok && (ind.includes(tok) || company.includes(tok)))) {

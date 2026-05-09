@@ -5,9 +5,10 @@ import { useEffect, useState } from "react";
 
 const STEPS = [
   "Loading parsed replies",
-  "Computing prediction accuracy by archetype",
-  "Detecting unpredicted objection clusters",
-  "Drafting persona update v2",
+  "Comparing signal performance by type",
+  "Computing buyer-memory prediction accuracy",
+  "Detecting message-angle winners",
+  "Drafting Signal, Buyer, and Message Memory updates",
 ];
 
 export function CalibrationAnimation({
@@ -41,7 +42,7 @@ export function CalibrationAnimation({
     >
       <div className="shimmer pointer-events-none absolute inset-0 opacity-60" />
       <div className="relative">
-        <div className="label">Calibrating</div>
+        <div className="label">Running learning loop</div>
         <ul className="mt-3 space-y-2">
           {STEPS.map((label, i) => {
             const done = step > i;
@@ -57,7 +58,7 @@ export function CalibrationAnimation({
                       : "border-white/10 bg-white/5 text-white/40"
                   }`}
                 >
-                  {done ? "✓" : i + 1}
+                  {done ? "ok" : i + 1}
                 </span>
                 <span className={done ? "text-white/85" : active ? "text-white" : "text-white/45"}>
                   {label}

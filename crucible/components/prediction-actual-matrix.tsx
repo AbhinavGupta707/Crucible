@@ -123,7 +123,7 @@ function FragmentRow({
             style={style}
             title={c.count === 0 ? "—" : `${c.count} ${c.isDiagonal ? "correct" : "mismatch"}`}
           >
-            {c.count === 0 ? "·" : c.count}
+            {c.count === 0 ? "-" : c.count}
           </div>
         );
       })}

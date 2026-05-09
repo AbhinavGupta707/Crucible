@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import Link from "next/link";
 import { useState } from "react";
@@ -7,6 +7,7 @@ import {
   archetypeAccuracy,
   archetypes,
   calibrationMatrix,
+  nextCohortPlan,
   personaUpdate,
 } from "@/components/seed/data";
 import { PredictionActualMatrix } from "@/components/prediction-actual-matrix";
@@ -21,13 +22,13 @@ export default function CalibrationPage({ params }: { params: { offerId: string 
     <div className="space-y-6">
       <section className="surface flex flex-col gap-3 p-5 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <div className="label">Calibration</div>
+          <div className="label">Learning loop</div>
           <h2 className="mt-1 text-lg font-semibold">
-            Predicted vs actual · cohort 1
+            Signal, buyer, and message memory updated
           </h2>
           <p className="mt-1 max-w-2xl text-sm text-white/55">
-            This is the moment outbound becomes a learning loop. We compare what each archetype predicted
-            against what the replies actually said, then update the buyer memory.
+            This is the moment outbound becomes a learning loop. We compare signals, buyer predictions,
+            and message angles against what replies actually said, then update memory for cohort 2.
           </p>
         </div>
         {phase === "idle" ? (
@@ -53,7 +54,7 @@ export default function CalibrationPage({ params }: { params: { offerId: string 
             </div>
             <h3 className="text-base font-medium text-white/85">Ready to calibrate</h3>
             <p className="text-sm text-white/55">
-              The parser found 8 replies. One archetype hit its trigger thresholds. Click <strong className="text-white/80">Run calibration</strong> to see the matrix and the v1 → v2 update.
+            The parser found 8 replies. One archetype and two signal types hit learning thresholds. Click <strong className="text-white/80">Run calibration</strong> to see the memory updates.
             </p>
           </div>
         </div>
@@ -64,6 +65,27 @@ export default function CalibrationPage({ params }: { params: { offerId: string 
           <section className="grid gap-5 lg:grid-cols-[1.4fr_1fr]">
             <PredictionActualMatrix cells={calibrationMatrix} />
             <ArchetypeAccuracyList />
+          </section>
+
+          <section className="grid gap-4 lg:grid-cols-3">
+            <MemoryCard
+              title="Signal Memory"
+              tone="good"
+              items={nextCohortPlan.signalMemoryUpdates}
+            />
+            <MemoryCard
+              title="Buyer Memory"
+              tone="warn"
+              items={[
+                "Tool-Fatigued Operator v1 -> v2",
+                "Pricing was over-weighted; setup-time anxiety was the real objection.",
+              ]}
+            />
+            <MemoryCard
+              title="Message Memory"
+              tone="info"
+              items={nextCohortPlan.messageMemoryUpdates}
+            />
           </section>
 
           <section>
@@ -81,10 +103,10 @@ export default function CalibrationPage({ params }: { params: { offerId: string 
 
           <section className="surface flex flex-col items-start gap-3 border-l-4 border-plasma-400/50 p-5 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <div className="text-plasma-300">Buyer memory updated</div>
+              <div className="text-plasma-300">Signal-led memory updated</div>
               <p className="mt-1 max-w-xl text-sm text-white/70">
-                Tool-Fatigued Operator was wrong about pricing. It was right about exhaustion - just for
-                the wrong reason. Cohort 2 leads with implementation language.
+                Hiring-SDR signals worked, funding-round signals underperformed, and low-setup language beat
+                generic AI automation. Cohort 2 reprioritises leads before rewriting copy.
               </p>
             </div>
             <Link href={`/runs/${params.offerId}/next-cohort`} className="btn-primary shrink-0">
@@ -93,6 +115,32 @@ export default function CalibrationPage({ params }: { params: { offerId: string 
           </section>
         </>
       ) : null}
+    </div>
+  );
+}
+
+function MemoryCard({
+  title,
+  items,
+  tone,
+}: {
+  title: string;
+  items: string[];
+  tone: "good" | "warn" | "info";
+}) {
+  const dot =
+    tone === "good" ? "bg-signal-green" : tone === "warn" ? "bg-signal-amber" : "bg-plasma-400";
+  return (
+    <div className="surface p-5">
+      <div className="label">{title}</div>
+      <ul className="mt-3 space-y-2 text-sm text-white/80">
+        {items.map((item) => (
+          <li key={item} className="flex gap-2">
+            <span className={`mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full ${dot}`} />
+            {item}
+          </li>
+        ))}
+      </ul>
     </div>
   );
 }
@@ -121,7 +169,7 @@ function ArchetypeAccuracyList() {
                   {a.shouldUpdate ? <span className="ml-2 chip-ember">trigger</span> : null}
                 </div>
                 <div className="shrink-0 tabular-nums text-white/70">
-                  {a.correctCount}/{a.sentCount} · {pct}%
+                  {a.correctCount}/{a.sentCount} - {pct}%
                 </div>
               </div>
               <div className="mt-1.5 h-1.5 w-full overflow-hidden rounded-full bg-white/5">

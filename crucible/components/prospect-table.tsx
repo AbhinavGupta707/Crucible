@@ -12,13 +12,15 @@ export function ProspectTable({ offerId }: { offerId: string }) {
 
   const filtered = useMemo(() => {
     const needle = q.toLowerCase().trim();
-    return prospects.filter((p) => {
+    return [...prospects].sort((a, b) => b.leadPriorityScore - a.leadPriorityScore).filter((p) => {
       if (filterArchetype !== "all" && p.match.archetypeId !== filterArchetype) return false;
       if (!needle) return true;
       return (
         `${p.firstName} ${p.lastName}`.toLowerCase().includes(needle) ||
         p.company.toLowerCase().includes(needle) ||
         p.title.toLowerCase().includes(needle) ||
+        p.signalType.toLowerCase().includes(needle) ||
+        p.signalSummary.toLowerCase().includes(needle) ||
         p.match.archetypeName.toLowerCase().includes(needle)
       );
     });
@@ -28,11 +30,12 @@ export function ProspectTable({ offerId }: { offerId: string }) {
     <div className="space-y-5">
       <div className="surface flex flex-col gap-3 p-5 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <div className="label">Prospect inbox</div>
-          <h2 className="mt-1 text-lg font-semibold">{prospects.length} leads matched</h2>
+          <div className="label">Signal radar</div>
+          <h2 className="mt-1 text-lg font-semibold">{prospects.length} leads ranked by why now</h2>
           <p className="mt-1 text-sm text-white/55">
             CSV columns: first_name, last_name, email, title, company, industry, company_size, notes,
-            trigger, website, linkedin_summary.
+            trigger, website, linkedin_summary, signal_type, signal_summary, signal_source,
+            signal_date, signal_strength, intent_score, icp_fit_score.
           </p>
         </div>
         <div className="flex flex-col items-stretch gap-2 sm:flex-row sm:items-center">
@@ -40,7 +43,7 @@ export function ProspectTable({ offerId }: { offerId: string }) {
             <Upload className="h-4 w-4" /> Upload CSV
           </button>
           <Link href={`/runs/${offerId}/forge`} className="btn-primary">
-            Open forge <ArrowRight className="h-4 w-4" />
+            Open signal forge <ArrowRight className="h-4 w-4" />
           </Link>
         </div>
       </div>
@@ -51,7 +54,7 @@ export function ProspectTable({ offerId }: { offerId: string }) {
           <input
             value={q}
             onChange={(e) => setQ(e.target.value)}
-            placeholder="Search by name, company, title, archetype..."
+            placeholder="Search by name, company, signal, title, archetype..."
             className="field pl-9"
           />
         </div>
@@ -75,11 +78,11 @@ export function ProspectTable({ offerId }: { offerId: string }) {
           <table className="w-full text-sm">
             <thead className="bg-white/[0.03] text-left text-[11px] uppercase tracking-wider text-white/40">
               <tr>
-                <th className="px-4 py-3 font-medium">Prospect</th>
-                <th className="px-4 py-3 font-medium">Archetype</th>
-                <th className="px-4 py-3 font-medium">Match</th>
-                <th className="px-4 py-3 font-medium">Predicted objection</th>
-                <th className="px-4 py-3 font-medium">Recommended angle</th>
+                <th className="px-4 py-3 font-medium">Lead</th>
+                <th className="px-4 py-3 font-medium">Signal</th>
+                <th className="px-4 py-3 font-medium">Priority</th>
+                <th className="px-4 py-3 font-medium">Why now</th>
+                <th className="px-4 py-3 font-medium">Buyer memory</th>
                 <th className="px-4 py-3 font-medium">Risk</th>
               </tr>
             </thead>
@@ -94,25 +97,31 @@ export function ProspectTable({ offerId }: { offerId: string }) {
                       {p.firstName} {p.lastName}
                     </div>
                     <div className="text-xs text-white/50">
-                      {p.title} · {p.company}
+                      {p.title} - {p.company}
                     </div>
                     <div className="mt-1 text-[11px] text-white/35">{p.email}</div>
                   </td>
                   <td className="px-4 py-3 align-top">
-                    <div className="text-white/85">{p.match.archetypeName}</div>
-                    <div className="mt-1 flex flex-wrap gap-1">
-                      {p.match.matchedSignals.slice(0, 2).map((s) => (
-                        <span key={s} className="chip">
-                          {s}
-                        </span>
-                      ))}
+                    <div className="font-medium text-white/85">{p.signalType.replaceAll("_", " ")}</div>
+                    <div className="mt-1 text-xs text-white/55">{p.signalSummary}</div>
+                    <div className="mt-2 flex flex-wrap gap-1">
+                      <span className="chip-info">strength {p.signalStrength}</span>
+                      <span className="chip">fresh {p.signalFreshness}</span>
+                      <span className="chip">Fit {p.icpFitScore}</span>
                     </div>
                   </td>
                   <td className="px-4 py-3 align-top">
+                    <div className="text-2xl font-semibold text-ember-400">{p.leadPriorityScore}</div>
                     <MatchBadge confidence={p.match.confidence} />
                   </td>
-                  <td className="px-4 py-3 align-top text-white/75">{p.match.predictedObjection}</td>
-                  <td className="px-4 py-3 align-top text-white/75">{p.match.recommendedAngle}</td>
+                  <td className="px-4 py-3 align-top text-white/75">
+                    <div>{p.whyNow}</div>
+                    <div className="mt-1 text-xs text-plasma-300">{p.recommendedSignalAngle}</div>
+                  </td>
+                  <td className="px-4 py-3 align-top text-white/75">
+                    <div>{p.match.archetypeName}</div>
+                    <div className="mt-1 text-xs text-white/45">{p.match.predictedObjection}</div>
+                  </td>
                   <td className="px-4 py-3 align-top">
                     {p.match.riskFlags.length === 0 ? (
                       <span className="chip">none</span>
@@ -129,7 +138,7 @@ export function ProspectTable({ offerId }: { offerId: string }) {
               {filtered.length === 0 ? (
                 <tr>
                   <td colSpan={6} className="px-4 py-10 text-center text-sm text-white/50">
-                    No prospects match that filter.
+                    No leads match that filter.
                   </td>
                 </tr>
               ) : null}
@@ -147,14 +156,26 @@ export function ProspectTable({ offerId }: { offerId: string }) {
                   {p.firstName} {p.lastName}
                 </div>
                 <div className="text-xs text-white/50">
-                  {p.title} · {p.company}
+                  {p.title} - {p.company}
                 </div>
               </div>
               <MatchBadge confidence={p.match.confidence} />
             </div>
             <div className="mt-3 space-y-1.5 text-xs">
               <div>
-                <span className="text-white/40">Archetype: </span>
+                <span className="text-white/40">Signal: </span>
+                <span className="text-white/85">{p.signalType.replaceAll("_", " ")}</span>
+              </div>
+              <div>
+                <span className="text-white/40">Priority: </span>
+                <span className="text-ember-400">{p.leadPriorityScore}</span>
+              </div>
+              <div>
+                <span className="text-white/40">Why now: </span>
+                <span className="text-white/85">{p.whyNow}</span>
+              </div>
+              <div>
+                <span className="text-white/40">Buyer memory: </span>
                 <span className="text-white/85">{p.match.archetypeName}</span>
               </div>
               <div>
@@ -169,7 +190,7 @@ export function ProspectTable({ offerId }: { offerId: string }) {
           </div>
         ))}
         {filtered.length === 0 ? (
-          <div className="surface p-6 text-center text-sm text-white/50">No prospects match.</div>
+          <div className="surface p-6 text-center text-sm text-white/50">No leads match.</div>
         ) : null}
       </div>
     </div>

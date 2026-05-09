@@ -5,8 +5,9 @@ import {
   partitionAllowlistViolations,
 } from "../../lib/gmail/allowlist";
 
-const env = (value: string | undefined): NodeJS.ProcessEnv =>
-  ({ GMAIL_CONTROLLED_RECIPIENTS: value }) as NodeJS.ProcessEnv;
+const env = (value: string | undefined): Partial<NodeJS.ProcessEnv> => ({
+  GMAIL_CONTROLLED_RECIPIENTS: value,
+});
 
 describe("controlled recipient allowlist", () => {
   it("treats empty/missing config as no recipients allowed", () => {

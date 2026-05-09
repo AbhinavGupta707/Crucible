@@ -1,5 +1,8 @@
-﻿import { Prisma } from "@prisma/client";
+import { Prisma } from "@prisma/client";
+import { nanoid } from "nanoid";
 import { prisma } from "../prisma";
+import { getStore } from "../store";
+import type { Offer } from "../types";
 
 export type OfferCreateInput = Prisma.OfferCreateInput;
 
@@ -83,3 +86,48 @@ export async function getOfferRunFull(offerId: string) {
     },
   });
 }
+
+function now() {
+  return new Date().toISOString();
+}
+
+export const DEMO_WORKSPACE_ID = "ws_demo";
+
+export type SafeModeOfferInput = Partial<Offer> &
+  Pick<Offer, "rawFounderInput" | "icpGuess" | "desiredCta" | "tone">;
+
+export const offersRepo = {
+  create(data: SafeModeOfferInput): Offer {
+    const offer: Offer = {
+      id: data.id ?? `offer_${nanoid(8)}`,
+      workspaceId: data.workspaceId ?? DEMO_WORKSPACE_ID,
+      title: data.title ?? "Untitled offer",
+      productSummary:
+        data.productSummary ?? data.rawFounderInput.slice(0, 200),
+      rawFounderInput: data.rawFounderInput,
+      icpGuess: data.icpGuess,
+      desiredCta: data.desiredCta,
+      tone: data.tone,
+      painClaim: data.painClaim ?? "",
+      proofPoint: data.proofPoint ?? "",
+      likelyBuyer: data.likelyBuyer ?? "",
+      likelyUser: data.likelyUser ?? "",
+      champion: data.champion ?? "",
+      messageAngles: data.messageAngles ?? [],
+      riskyAssumptions: data.riskyAssumptions ?? [],
+      createdAt: data.createdAt ?? now(),
+    };
+    getStore().offers.set(offer.id, offer);
+    return offer;
+  },
+
+  findById(offerId: string) {
+    return getStore().offers.get(offerId) ?? null;
+  },
+
+  list() {
+    return Array.from(getStore().offers.values()).sort((a, b) =>
+      b.createdAt.localeCompare(a.createdAt),
+    );
+  },
+};

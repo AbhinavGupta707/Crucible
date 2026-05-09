@@ -16,13 +16,13 @@ const baseEmail: ApprovedEmail = {
 
 describe("isDemoSafeMode", () => {
   it("defaults to true when DEMO_SAFE_MODE is unset", () => {
-    expect(isDemoSafeMode({} as NodeJS.ProcessEnv)).toBe(true);
+    expect(isDemoSafeMode({})).toBe(true);
   });
 
   it("treats 'false', '0', 'no' as off", () => {
     for (const v of ["false", "FALSE", "0", "no"]) {
       expect(
-        isDemoSafeMode({ DEMO_SAFE_MODE: v } as NodeJS.ProcessEnv),
+        isDemoSafeMode({ DEMO_SAFE_MODE: v }),
       ).toBe(false);
     }
   });
@@ -30,7 +30,7 @@ describe("isDemoSafeMode", () => {
   it("treats anything else as on", () => {
     for (const v of ["true", "1", "yes", "anything"]) {
       expect(
-        isDemoSafeMode({ DEMO_SAFE_MODE: v } as NodeJS.ProcessEnv),
+        isDemoSafeMode({ DEMO_SAFE_MODE: v }),
       ).toBe(true);
     }
   });
@@ -38,19 +38,19 @@ describe("isDemoSafeMode", () => {
 
 describe("gmailIsConfigured", () => {
   it("requires all three OAuth env vars", () => {
-    expect(gmailIsConfigured({} as NodeJS.ProcessEnv)).toBe(false);
+    expect(gmailIsConfigured({})).toBe(false);
     expect(
       gmailIsConfigured({
         GOOGLE_CLIENT_ID: "x",
         GOOGLE_CLIENT_SECRET: "y",
-      } as NodeJS.ProcessEnv),
+      }),
     ).toBe(false);
     expect(
       gmailIsConfigured({
         GOOGLE_CLIENT_ID: "x",
         GOOGLE_CLIENT_SECRET: "y",
         GOOGLE_REDIRECT_URI: "z",
-      } as NodeJS.ProcessEnv),
+      }),
     ).toBe(true);
   });
 });
@@ -70,7 +70,7 @@ describe("sendApproved guardrails", () => {
       env: {
         DEMO_SAFE_MODE: "true",
         GMAIL_CONTROLLED_RECIPIENTS: "demo@example.com",
-      } as NodeJS.ProcessEnv,
+      },
     });
     expect(result.ok).toBe(false);
     if (!result.ok) expect(result.reason).toBe("demo_safe_mode");
@@ -83,7 +83,7 @@ describe("sendApproved guardrails", () => {
       env: {
         DEMO_SAFE_MODE: "false",
         GMAIL_CONTROLLED_RECIPIENTS: "demo@example.com",
-      } as NodeJS.ProcessEnv,
+      },
     });
     expect(result.ok).toBe(false);
     if (!result.ok) expect(result.reason).toBe("not_approved");
@@ -96,7 +96,7 @@ describe("sendApproved guardrails", () => {
       env: {
         DEMO_SAFE_MODE: "false",
         GMAIL_CONTROLLED_RECIPIENTS: "demo@example.com",
-      } as NodeJS.ProcessEnv,
+      },
     });
     expect(result.ok).toBe(false);
     if (!result.ok) expect(result.reason).toBe("outside_allowlist");
@@ -109,7 +109,7 @@ describe("sendApproved guardrails", () => {
       env: {
         DEMO_SAFE_MODE: "false",
         GMAIL_CONTROLLED_RECIPIENTS: "",
-      } as NodeJS.ProcessEnv,
+      },
     });
     expect(result.ok).toBe(false);
     if (!result.ok) expect(result.reason).toBe("outside_allowlist");

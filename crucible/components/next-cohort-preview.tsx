@@ -11,8 +11,8 @@ export function NextCohortPreview({ offerId }: { offerId: string }) {
     <div className="space-y-6">
       <section className="surface flex flex-col gap-3 p-5 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <div className="label">Cohort 2 plan</div>
-          <h2 className="mt-1 text-lg font-semibold">Rewritten with the v2 buyer memory</h2>
+          <div className="label">Next Signal Cohort</div>
+          <h2 className="mt-1 text-lg font-semibold">Reprioritised with signal, buyer, and message memory</h2>
           <p className="mt-1 max-w-2xl text-sm text-white/55">{plan.summary}</p>
         </div>
         <Link href={`/runs/${offerId}/calibration`} className="btn-secondary">
@@ -23,19 +23,19 @@ export function NextCohortPreview({ offerId }: { offerId: string }) {
       <section className="grid gap-4 lg:grid-cols-2">
         <EmailCard
           tone="muted"
-          tag="Cohort 1 · before"
+          tag="Cohort 1 - before"
           tagTone="chip"
           subject={plan.beforeEmail.subject}
           body={plan.beforeEmail.body}
-          footer="Cohort 1 simulated quality · honest label, not a market result"
+          footer="Cohort 1 simulated quality - honest label, not a market result"
         />
         <EmailCard
           tone="bright"
-          tag="Cohort 2 · after"
+          tag="Cohort 2 - after"
           tagTone="chip-ember"
           subject={plan.afterEmail.subject}
           body={plan.afterEmail.body}
-          footer="Cohort 2 plan after calibration · still synthetic, ready for human approval"
+          footer="Cohort 2 plan after learning loop - still synthetic, ready for human approval"
         />
       </section>
 
@@ -55,6 +55,21 @@ export function NextCohortPreview({ offerId }: { offerId: string }) {
           title="Pause"
           icon={<Pause className="h-4 w-4 text-signal-amber" />}
           items={plan.segmentsToPause}
+          tone="warn"
+        />
+      </section>
+
+      <section className="grid gap-4 lg:grid-cols-2">
+        <PlanCard
+          title="Signal types to double down"
+          icon={<Play className="h-4 w-4 text-signal-green" />}
+          items={plan.signalTypesToDoubleDown}
+          tone="good"
+        />
+        <PlanCard
+          title="Signal types to pause"
+          icon={<Pause className="h-4 w-4 text-signal-amber" />}
+          items={plan.signalTypesToPause}
           tone="warn"
         />
       </section>

@@ -1,11 +1,11 @@
-﻿import Link from "next/link";
+import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { archetypes, offer, prospects, replyAnalyses } from "@/components/seed/data";
 
 export default function RunOverviewPage({ params }: { params: { offerId: string } }) {
   const stats = [
-    { label: "Archetypes", value: archetypes.length },
-    { label: "Prospects matched", value: prospects.length },
+    { label: "Buyer memories", value: archetypes.length },
+    { label: "Priority leads", value: prospects.length },
     { label: "Replies parsed", value: replyAnalyses.filter((r) => r.actualOutcome !== "no_reply").length },
     { label: "Calibration events", value: 1 },
   ];
@@ -37,10 +37,10 @@ export default function RunOverviewPage({ params }: { params: { offerId: string 
       </section>
 
       <Link
-        href={`/runs/${params.offerId}/library`}
+        href={`/runs/${params.offerId}/prospects`}
         className="btn-primary mx-auto mt-4 w-full sm:w-auto"
       >
-        Open archetype library <ArrowRight className="h-4 w-4" />
+        Open Signal Radar <ArrowRight className="h-4 w-4" />
       </Link>
     </div>
   );

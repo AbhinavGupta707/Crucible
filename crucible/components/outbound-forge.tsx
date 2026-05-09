@@ -42,9 +42,9 @@ export function OutboundForge({ offerId }: { offerId: string }) {
     <div className="space-y-5">
       <div className="surface flex flex-col gap-3 p-5 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <div className="label">Outbound forge · cohort 1</div>
+          <div className="label">Signal-to-Message Forge - cohort 1</div>
           <h2 className="mt-1 text-lg font-semibold">
-            {emails.length} drafts · {approvedCount} approved
+            {emails.length} signal-aware drafts - {approvedCount} approved
           </h2>
           <p className="mt-1 text-sm text-white/55">
             Every email tests an explicit hypothesis. Nothing sends until you approve. Gmail draft creation
@@ -81,7 +81,7 @@ export function OutboundForge({ offerId }: { offerId: string }) {
               <header className="flex items-start justify-between gap-3">
                 <div>
                   <div className="text-xs uppercase tracking-wider text-white/40">
-                    To · {prospect?.firstName} {prospect?.lastName} · {prospect?.company}
+                    To - {prospect?.firstName} {prospect?.lastName} - {prospect?.company}
                   </div>
                   <div className="mt-0.5 text-[11px] text-white/40">{prospect?.email}</div>
                 </div>
@@ -121,7 +121,7 @@ export function OutboundForge({ offerId }: { offerId: string }) {
               {e.complianceWarnings.length > 0 ? (
                 <div className="rounded-lg border border-signal-amber/30 bg-signal-amber/10 px-3 py-2 text-xs text-signal-amber">
                   <AlertTriangle className="mr-1 inline h-3 w-3" />
-                  {e.complianceWarnings.join(" · ")}
+                  {e.complianceWarnings.join(" - ")}
                 </div>
               ) : null}
 

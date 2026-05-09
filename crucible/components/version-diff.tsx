@@ -20,7 +20,7 @@ export function VersionDiff({
         <div>
           <div className="label flex items-center gap-2">
             <span className="inline-block h-1.5 w-1.5 animate-pulse-soft rounded-full bg-ember-400" />
-            Calibration event · {archetype.name}
+            Buyer Memory update - {archetype.name}
           </div>
           <h3 className="mt-2 text-xl font-semibold tracking-tight">
             v{archetype.version} <ArrowRight className="inline h-4 w-4 text-white/40" /> v

@@ -167,6 +167,18 @@ model Prospect {
   trigger         String?
   website         String?
   linkedinSummary String?
+  signalType      String?
+  signalSummary   String?
+  signalSource    String?
+  signalDate      DateTime?
+  signalStrength  Float?
+  signalUrl       String?
+  intentScore     Float?
+  icpFitScore     Float?
+  signalFreshnessScore Float?
+  leadPriorityScore    Float?
+  whyNow          String?
+  recommendedAngle String?
   createdAt       DateTime @default(now())
 
   matches        ProspectMatch[]
@@ -193,6 +205,7 @@ model ProspectMatch {
   predictionConfidence     Float?
   phrasesToUse             Json? // string[]
   phrasesToAvoid           Json? // string[]
+  signalContribution        Float?
   createdAt                DateTime       @default(now())
   updatedAt                DateTime       @updatedAt
 
@@ -318,6 +331,9 @@ model CalibrationRun {
   ctaPerformance                Json
   phrasesToAvoid                Json // string[]
   newUnpredictedObjections      Json // string[]
+  signalPerformanceByType       Json?
+  signalMemoryUpdates           Json?
+  messageMemoryUpdates          Json?
   summary                       String
   createdAt                     DateTime       @default(now())
 
@@ -357,6 +373,9 @@ model NextCohortPlan {
   segmentsToDoubleDown      Json // string[]
   segmentsToPause           Json // string[]
   revisedMessageAngles      Json // string[]
+  signalTypesToDoubleDown   Json?
+  signalTypesToPause        Json?
+  reprioritisedLeadIds      Json?
   newEmailTemplates         Json // [{ archetypeId, subject, body, hypothesis, angle }]
   killCriterion             String
   successMetric             String

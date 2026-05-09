@@ -1,5 +1,8 @@
-﻿import { Prisma } from "@prisma/client";
+import { Prisma } from "@prisma/client";
+import { nanoid } from "nanoid";
 import { prisma } from "../prisma";
+import { getStore } from "../store";
+import type { ArchetypeVersion, BuyerArchetype } from "../types";
 
 export type ArchetypeCreateInput = Prisma.BuyerArchetypeCreateInput;
 export type ArchetypeVersionCreateInput =
@@ -87,3 +90,103 @@ export async function appendVersionAndActivate(args: {
   });
   return created;
 }
+
+function now() {
+  return new Date().toISOString();
+}
+
+export type ArchetypeSeed = {
+  offerId: string;
+  name: string;
+  segment: string;
+  role: string;
+  initialVersion: Omit<
+    ArchetypeVersion,
+    "id" | "archetypeId" | "versionNumber" | "createdAt" | "reason"
+  > & { reason?: string | null };
+};
+
+export const archetypesRepo = {
+  createWithInitialVersion(seed: ArchetypeSeed): BuyerArchetype {
+    const archetypeId = `arch_${nanoid(8)}`;
+    const versionId = `archv_${nanoid(8)}`;
+    const version: ArchetypeVersion = {
+      id: versionId,
+      archetypeId,
+      versionNumber: 1,
+      reason: seed.initialVersion.reason ?? null,
+      description: seed.initialVersion.description,
+      currentWorkflow: seed.initialVersion.currentWorkflow,
+      painIntensity: seed.initialVersion.painIntensity,
+      buyingPower: seed.initialVersion.buyingPower,
+      riskTolerance: seed.initialVersion.riskTolerance,
+      voiceStyle: seed.initialVersion.voiceStyle,
+      predictedObjections: seed.initialVersion.predictedObjections,
+      preferredAngles: seed.initialVersion.preferredAngles,
+      dislikedPhrases: seed.initialVersion.dislikedPhrases,
+      likelyReplyPatterns: seed.initialVersion.likelyReplyPatterns,
+      confidence: seed.initialVersion.confidence,
+      createdAt: now(),
+    };
+    const archetype: BuyerArchetype = {
+      id: archetypeId,
+      offerId: seed.offerId,
+      name: seed.name,
+      segment: seed.segment,
+      role: seed.role,
+      activeVersionId: versionId,
+      versions: [version],
+      createdAt: now(),
+    };
+    getStore().archetypes.set(archetype.id, archetype);
+    return archetype;
+  },
+
+  listByOffer(offerId: string) {
+    return Array.from(getStore().archetypes.values()).filter(
+      (a) => a.offerId === offerId,
+    );
+  },
+
+  findById(archetypeId: string) {
+    return getStore().archetypes.get(archetypeId) ?? null;
+  },
+
+  activeVersion(archetype: BuyerArchetype) {
+    return (
+      archetype.versions.find((v) => v.id === archetype.activeVersionId) ??
+      archetype.versions[archetype.versions.length - 1]
+    );
+  },
+
+  appendVersion(
+    archetypeId: string,
+    data: Omit<ArchetypeVersion, "id" | "archetypeId" | "versionNumber" | "createdAt">,
+  ) {
+    const archetype = getStore().archetypes.get(archetypeId);
+    if (!archetype) throw new Error(`Archetype not found: ${archetypeId}`);
+    const previousVersion = this.activeVersion(archetype);
+    const newVersion: ArchetypeVersion = {
+      id: `archv_${nanoid(8)}`,
+      archetypeId,
+      versionNumber: previousVersion.versionNumber + 1,
+      reason: data.reason ?? null,
+      description: data.description,
+      currentWorkflow: data.currentWorkflow,
+      painIntensity: data.painIntensity,
+      buyingPower: data.buyingPower,
+      riskTolerance: data.riskTolerance,
+      voiceStyle: data.voiceStyle,
+      predictedObjections: data.predictedObjections,
+      preferredAngles: data.preferredAngles,
+      dislikedPhrases: data.dislikedPhrases,
+      likelyReplyPatterns: data.likelyReplyPatterns,
+      confidence: data.confidence,
+      createdAt: now(),
+    };
+    archetype.versions.push(newVersion);
+    archetype.activeVersionId = newVersion.id;
+    getStore().archetypes.set(archetype.id, archetype);
+    return { previousVersion, newVersion };
+  },
+};

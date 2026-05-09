@@ -146,7 +146,7 @@ export function OfferIntake() {
             </li>
             <li className="flex gap-2">
               <span className="mt-1 h-1.5 w-1.5 rounded-full bg-plasma-400" />
-              <span>8-12 buyer archetypes with predicted objections and best angles.</span>
+              <span>Signal Radar ranks leads before Buyer Memory predicts objections.</span>
             </li>
             <li className="flex gap-2">
               <span className="mt-1 h-1.5 w-1.5 rounded-full bg-plasma-400" />
@@ -158,19 +158,20 @@ export function OfferIntake() {
           <div className="label">Demo path</div>
           <ol className="mt-3 space-y-1 text-sm text-white/70">
             <li>1. Build buyer memory</li>
-            <li>2. Match prospects</li>
-            <li>3. Forge outbound emails</li>
+            <li>2. Rank signals</li>
+            <li>3. Build buyer memory</li>
+            <li>4. Forge signal-aware emails</li>
             <li>4. Replay replies</li>
-            <li>5. Calibrate v1 → v2</li>
-            <li>6. Generate next cohort</li>
+            <li>5. Learn from replies</li>
+            <li>6. Generate next signal cohort</li>
           </ol>
         </div>
         <div className="surface p-5">
           <div className="label">Honesty notes</div>
           <ul className="mt-3 space-y-2 text-xs text-white/50">
-            <li>· Predictions are model output, not market proof.</li>
-            <li>· Replies in this demo are seeded, not from real recipients.</li>
-            <li>· No email is sent without your explicit approval.</li>
+            <li>- Predictions are model output, not market proof.</li>
+            <li>- Replies in this demo are seeded, not from real recipients.</li>
+            <li>- No email is sent without your explicit approval.</li>
           </ul>
         </div>
       </aside>

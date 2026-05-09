@@ -7,14 +7,14 @@ function parseAddressList(value: string | undefined): string[] {
 }
 
 export function getControlledRecipients(
-  env: NodeJS.ProcessEnv = process.env,
+  env: Partial<NodeJS.ProcessEnv> = process.env,
 ): string[] {
   return parseAddressList(env.GMAIL_CONTROLLED_RECIPIENTS);
 }
 
 export function isAllowedRecipient(
   email: string,
-  env: NodeJS.ProcessEnv = process.env,
+  env: Partial<NodeJS.ProcessEnv> = process.env,
 ): boolean {
   const allowlist = getControlledRecipients(env);
   if (allowlist.length === 0) return false;
@@ -31,7 +31,7 @@ function matchesAllowlistEntry(email: string, entry: string): boolean {
 
 export function partitionAllowlistViolations(
   emails: string[],
-  env: NodeJS.ProcessEnv = process.env,
+  env: Partial<NodeJS.ProcessEnv> = process.env,
 ): { allowed: string[]; blocked: string[] } {
   const allowed: string[] = [];
   const blocked: string[] = [];

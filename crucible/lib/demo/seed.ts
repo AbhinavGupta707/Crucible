@@ -1,5 +1,13 @@
-﻿import { Prisma } from "@prisma/client";
+import { Prisma } from "@prisma/client";
 import { prisma } from "../db/prisma";
+import { buildBuyerMemory } from "../ai/workflows/build-buyer-memory";
+import { generateEmailsForCohort } from "../ai/workflows/generate-emails";
+import { matchProspect } from "../ai/workflows/match-prospect";
+import { generatePreflight } from "../ai/workflows/preflight";
+import { cohortsRepo, campaignsRepo } from "../db/repositories/campaigns";
+import { offersRepo } from "../db/repositories/offers";
+import { prospectsRepo } from "../db/repositories/prospects";
+import { getStore } from "../db/store";
 import {
   DEMO_IDS,
   DEMO_TONE,
@@ -10,6 +18,7 @@ import {
   loadSampleOfferText,
   parseLeadsCsv,
 } from "./sample-data";
+import { SAMPLE_LEADS } from "./sample-leads";
 
 type AnyRecord = Record<string, unknown>;
 
@@ -158,6 +167,22 @@ export async function seedDemoWorkspace(): Promise<{
         trigger: lead.trigger || null,
         website: lead.website || null,
         linkedinSummary: lead.linkedin_summary || null,
+        signalType: lead.signal_type || null,
+        signalSummary: lead.signal_summary || null,
+        signalSource: lead.signal_source || null,
+        signalDate: lead.signal_date ? new Date(lead.signal_date) : null,
+        signalStrength: lead.signal_strength ? Number(lead.signal_strength) : null,
+        signalUrl: lead.signal_url || null,
+        intentScore: lead.intent_score ? Number(lead.intent_score) : null,
+        icpFitScore: lead.icp_fit_score ? Number(lead.icp_fit_score) : null,
+        signalFreshnessScore: lead.signal_freshness_score
+          ? Number(lead.signal_freshness_score)
+          : null,
+        leadPriorityScore: lead.lead_priority_score
+          ? Number(lead.lead_priority_score)
+          : null,
+        whyNow: lead.why_now || null,
+        recommendedAngle: lead.recommended_angle || null,
       },
     });
   }
@@ -200,6 +225,7 @@ export async function seedDemoWorkspace(): Promise<{
         predictionConfidence: p.confidence,
         phrasesToUse: asJson(p.phrasesToUse),
         phrasesToAvoid: asJson(p.phrasesToAvoid),
+        signalContribution: Number((p as { signalContribution?: number }).signalContribution ?? 0.5),
       },
     });
   }
@@ -346,6 +372,9 @@ export async function seedDemoWorkspace(): Promise<{
       ctaPerformance: asJson(metrics.ctaPerformance ?? {}),
       phrasesToAvoid: asJson(metrics.phrasesToAvoid ?? []),
       newUnpredictedObjections: asJson(metrics.newUnpredictedObjections ?? []),
+      signalPerformanceByType: asJson(metrics.signalPerformanceByType ?? {}),
+      signalMemoryUpdates: asJson(calibration.signalMemoryUpdates ?? []),
+      messageMemoryUpdates: asJson(calibration.messageMemoryUpdates ?? []),
       summary: String(calibration.summary ?? ""),
     },
   });
@@ -423,6 +452,9 @@ export async function seedDemoWorkspace(): Promise<{
       segmentsToDoubleDown: asJson(next.segmentsToDoubleDown ?? []),
       segmentsToPause: asJson(next.segmentsToPause ?? []),
       revisedMessageAngles: asJson(next.revisedMessageAngles ?? []),
+      signalTypesToDoubleDown: asJson(next.signalTypesToDoubleDown ?? []),
+      signalTypesToPause: asJson(next.signalTypesToPause ?? []),
+      reprioritisedLeadIds: asJson(next.reprioritisedLeadIds ?? []),
       newEmailTemplates: asJson(next.newEmailTemplates ?? []),
       killCriterion: String(next.killCriterion ?? ""),
       successMetric: String(next.successMetric ?? ""),
@@ -440,5 +472,107 @@ export async function seedDemoWorkspace(): Promise<{
     prospectCount: leads.length,
     emailCount,
     replyCount,
+  };
+}
+
+/**
+ * Process-local demo seed used by the safe-mode API route and route-handler
+ * tests. It keeps the hackathon demo fast and DB-independent while
+ * seedDemoWorkspace remains the Prisma/Neon seed path.
+ */
+export async function seedDemo() {
+  const store = getStore();
+  const existingOffer = store.offers.get(DEMO_IDS.offer);
+  if (existingOffer) {
+    const campaigns = Array.from(store.campaigns.values()).filter(
+      (c) => c.offerId === existingOffer.id,
+    );
+    const campaign = campaigns[0] ?? campaignsRepo.create(existingOffer.id, "Demo Campaign");
+    const cohorts = Array.from(store.cohorts.values()).filter(
+      (c) => c.campaignId === campaign.id,
+    );
+    const cohort = cohorts[0] ?? cohortsRepo.create(campaign.id, 1);
+    return {
+      offer: existingOffer,
+      campaign,
+      cohort,
+      archetypes: Array.from(store.archetypes.values()).filter(
+        (a) => a.offerId === existingOffer.id,
+      ),
+      prospects: Array.from(store.prospects.values()).filter(
+        (p) => p.offerId === existingOffer.id,
+      ),
+      emails: Array.from(store.emails.values()).filter(
+        (e) => e.cohortId === cohort.id,
+      ),
+      created: false,
+    };
+  }
+
+  const offerText = loadSampleOfferText();
+  const offer = offersRepo.create({
+    id: DEMO_IDS.offer,
+    workspaceId: DEMO_IDS.workspace,
+    rawFounderInput: offerText,
+    title: "Follow-up Copilot for Agencies",
+    productSummary:
+      "We help small agencies recover warm inbound leads that go quiet after discovery calls.",
+    icpGuess: "Founders and operators at 5-25 person agencies",
+    likelyBuyer: "Agency founder or operator",
+    likelyUser: "Founder-led sales team",
+    champion: "Operations owner",
+    painClaim: "Warm leads leak because the second follow-up never happens.",
+    proofPoint: "Seeded demo data only",
+    desiredCta: "fit check",
+    tone: DEMO_TONE,
+    messageAngles: ["Recover warm leads", "We draft, you approve"],
+    riskyAssumptions: ["Signal quality is imported, not scraped live."],
+  });
+
+  const { archetypes } = await buildBuyerMemory({ offerId: offer.id });
+  const prospects = SAMPLE_LEADS.map((lead) =>
+    prospectsRepo.create({
+      offerId: offer.id,
+      firstName: lead.firstName,
+      lastName: lead.lastName,
+      email: lead.email,
+      title: lead.title,
+      company: lead.company,
+      industry: lead.industry,
+      companySize: lead.companySize,
+      notes: lead.notes,
+      trigger: lead.trigger,
+      website: lead.website,
+      linkedinSummary: lead.linkedinSummary,
+      signalType: "manual_trigger",
+      signalSummary: lead.trigger,
+      signalSource: "Seed CSV",
+      signalStrength: 70,
+      intentScore: 68,
+      icpFitScore: 76,
+      signalFreshnessScore: 80,
+      leadPriorityScore: 74,
+      whyNow: lead.trigger,
+      recommendedAngle: "Recover warm leads without adding setup work.",
+    }),
+  );
+
+  for (const prospect of prospects) {
+    await matchProspect(prospect);
+  }
+
+  const campaign = campaignsRepo.create(offer.id, "Demo Campaign");
+  const cohort = cohortsRepo.create(campaign.id, 1);
+  await generatePreflight(offer.id, prospects.map((p) => p.id));
+  const { emails } = await generateEmailsForCohort(cohort.id, offer.id);
+
+  return {
+    offer,
+    campaign,
+    cohort,
+    archetypes,
+    prospects,
+    emails,
+    created: true,
   };
 }

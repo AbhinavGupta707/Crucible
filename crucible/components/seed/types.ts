@@ -49,6 +49,17 @@ export type Prospect = {
   companySize: string;
   trigger: string;
   notes: string;
+  signalType: string;
+  signalSummary: string;
+  signalSource: string;
+  signalDate: string;
+  signalStrength: number;
+  signalFreshness: number;
+  intentScore: number;
+  icpFitScore: number;
+  leadPriorityScore: number;
+  whyNow: string;
+  recommendedSignalAngle: string;
   match: {
     archetypeId: string;
     archetypeName: string;
@@ -141,6 +152,10 @@ export type NextCohortPlan = {
   changesFromPreviousCohort: string[];
   segmentsToDoubleDown: string[];
   segmentsToPause: string[];
+  signalTypesToDoubleDown: string[];
+  signalTypesToPause: string[];
+  signalMemoryUpdates: string[];
+  messageMemoryUpdates: string[];
   revisedHypothesis: string;
   successMetric: string;
   killCriterion: string;

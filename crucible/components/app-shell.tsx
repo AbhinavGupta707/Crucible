@@ -13,7 +13,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             </span>
             <div className="leading-tight">
               <div className="text-sm font-semibold tracking-tight text-white">Crucible</div>
-              <div className="text-[10px] uppercase tracking-[0.18em] text-white/40">Outbound that learns</div>
+              <div className="text-[10px] uppercase tracking-[0.18em] text-white/40">
+                Signal-led outbound
+              </div>
             </div>
           </Link>
           <div className="flex items-center gap-2 sm:gap-3">
@@ -25,7 +27,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         <div className="mx-auto w-full max-w-7xl px-4 py-6 sm:px-6 sm:py-10">{children}</div>
       </main>
       <footer className="border-t border-white/5 py-6 text-center text-[11px] text-white/30">
-        Crucible MVP · Demo data is synthetic. Synthetic predictions are not real market proof.
+        Crucible MVP - Demo data is synthetic. Synthetic predictions are not real market proof.
       </footer>
     </div>
   );

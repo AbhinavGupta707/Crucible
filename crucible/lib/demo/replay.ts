@@ -1,5 +1,8 @@
-﻿import { prisma } from "../db/prisma";
+import { prisma } from "../db/prisma";
+import { repliesRepo } from "../db/repositories/replies";
+import { getStore } from "../db/store";
 import { DEMO_IDS, loadCachedAiOutput, loadSampleReplies } from "./sample-data";
+import { SAMPLE_REPLIES } from "./sample-replies";
 
 type AnyRecord = Record<string, unknown>;
 
@@ -83,4 +86,54 @@ export async function replayRepliesIntoCohort(args: {
   }
 
   return { replyCount, mismatchCount };
+}
+
+export async function replayReplies(
+  cohortId: string,
+): Promise<{ replies: ReturnType<typeof repliesRepo.listByCohort>; warnings: string[] }> {
+  const store = getStore();
+  const warnings: string[] = [];
+  const replies = [];
+
+  for (const staged of SAMPLE_REPLIES) {
+    const prospect = Array.from(store.prospects.values()).find(
+      (p) => p.email === staged.prospectEmail,
+    );
+    if (!prospect) {
+      warnings.push(`No prospect found for staged reply: ${staged.prospectEmail}`);
+      continue;
+    }
+    const email = Array.from(store.emails.values()).find(
+      (e) => e.cohortId === cohortId && e.prospectId === prospect.id,
+    );
+    if (!email) {
+      warnings.push(`No email found for staged reply: ${staged.prospectEmail}`);
+      continue;
+    }
+    const predicted = (email.predictedObjection ?? "").toLowerCase();
+    const actual = (staged.objectionType ?? staged.outcome).toLowerCase();
+    const predictedWasCorrect =
+      predicted.length > 0 &&
+      (predicted.includes(actual) || actual.includes(predicted));
+    email.status = "sent";
+    const reply = repliesRepo.upsertForEmail({
+      emailId: email.id,
+      rawText: staged.rawText,
+      outcome: staged.outcome,
+      sentiment: staged.sentiment,
+      objectionType: staged.objectionType,
+      funnelStage: staged.funnelStage,
+      volunteeredInfo: staged.volunteeredInfo,
+      predictedWasCorrect,
+      mismatchReason: predictedWasCorrect
+        ? null
+        : `Predicted ${email.predictedObjection ?? "unknown"}; observed ${
+            staged.objectionType ?? staged.outcome
+          }.`,
+      confidence: staged.confidence,
+    });
+    replies.push(reply);
+  }
+
+  return { replies, warnings };
 }

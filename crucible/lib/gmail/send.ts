@@ -15,7 +15,7 @@ export type SendApprovedInput = {
   workspaceId: string;
   email: ApprovedEmail;
   fromOverride?: RecipientAddress;
-  env?: NodeJS.ProcessEnv;
+  env?: Partial<NodeJS.ProcessEnv>;
 };
 
 export async function sendApproved(

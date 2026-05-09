@@ -396,9 +396,38 @@
         "Overworked Agency Owner": { "missed-revenue framing": { "replies": 2, "positives": 2 } }
       },
       "ctaPerformance": { "15-min fit check": { "sent": 6, "positives": 2 }, "name of the right person": { "sent": 1, "positives": 0 } },
+      "signalPerformanceByType": {
+        "hiring_sales": { "sent": 3, "replyCount": 3, "positiveReplyCount": 2, "learning": "Worked better than predicted because hiring SDRs exposes follow-up leakage." },
+        "funding_round": { "sent": 2, "replyCount": 0, "positiveReplyCount": 0, "learning": "Noisy signal for this offer unless paired with explicit sales-process pain." },
+        "posted_about_problem": { "sent": 2, "replyCount": 2, "positiveReplyCount": 1, "learning": "Strong when the post explicitly mentions missed follow-up." }
+      },
       "phrasesToAvoid": ["price transparency", "flat pricing", "platform"],
       "newUnpredictedObjections": ["implementation_time", "tool freeze"]
     },
+    "signalMemoryUpdates": [
+      {
+        "signalType": "hiring_sales",
+        "recommendedUse": "prioritise",
+        "performanceSummary": "Hiring-SDR signals produced the strongest reply quality for this offer.",
+        "phrasesToUse": ["scaling outbound", "recover warm leads without adding SDR admin"],
+        "phrasesToAvoid": ["generic headcount growth"]
+      },
+      {
+        "signalType": "funding_round",
+        "recommendedUse": "pause",
+        "performanceSummary": "Funding-round leads underperformed because the trigger is too broad without follow-up pain.",
+        "phrasesToUse": ["protect pipeline quality while scaling"],
+        "phrasesToAvoid": ["congrats on the raise"]
+      }
+    ],
+    "messageMemoryUpdates": [
+      {
+        "angle": "low_setup",
+        "performanceSummary": "Low-setup language beat AI automation language.",
+        "phrasesToUse": ["we draft, you approve", "no new dashboard", "15-min fit check"],
+        "phrasesToAvoid": ["AI automation platform", "book a demo"]
+      }
+    ],
     "updates": [
       {
         "archetypeName": "Tool-Fatigued Operator",
@@ -435,6 +464,9 @@
     ],
     "segmentsToDoubleDown": ["Overworked Agency Owner", "Tool-Fatigued Operator (with new framing)"],
     "segmentsToPause": ["Skeptical Solo Consultant"],
+    "signalTypesToDoubleDown": ["hiring_sales", "posted_about_problem"],
+    "signalTypesToPause": ["funding_round"],
+    "reprioritisedLeadIds": ["maya@northrowagency.com", "priya@altitude.partners", "daniel@spruce-studio.co"],
     "revisedMessageAngles": [
       "implementation-light framing for tool-fatigued buyers",
       "missed-revenue framing for owners",

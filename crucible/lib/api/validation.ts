@@ -8,7 +8,7 @@ export type ParseResult<T> =
   | { ok: false; response: NextResponse };
 
 function formatZodError(error: ZodError): string {
-  return error.errors
+  return error.issues
     .map((issue) => {
       const path = issue.path.join(".") || "(root)";
       return `${path}: ${issue.message}`;

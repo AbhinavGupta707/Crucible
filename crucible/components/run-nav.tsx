@@ -21,12 +21,12 @@ type Step = {
 };
 
 const STEPS: Step[] = [
-  { slug: "library", label: "Archetypes", icon: Library, n: 2 },
-  { slug: "prospects", label: "Prospects", icon: Inbox, n: 3 },
-  { slug: "forge", label: "Forge", icon: Send, n: 4 },
+  { slug: "prospects", label: "Signal Radar", icon: Inbox, n: 2 },
+  { slug: "library", label: "Buyer Memory", icon: Library, n: 3 },
+  { slug: "forge", label: "Signal Forge", icon: Send, n: 4 },
   { slug: "monitor", label: "Monitor", icon: ClipboardList, n: 5 },
-  { slug: "calibration", label: "Calibration", icon: LineChart, n: 6, highlight: true },
-  { slug: "next-cohort", label: "Next cohort", icon: RefreshCcw, n: 7 },
+  { slug: "calibration", label: "Learning Loop", icon: LineChart, n: 6, highlight: true },
+  { slug: "next-cohort", label: "Next Signal Cohort", icon: RefreshCcw, n: 7 },
 ];
 
 export function RunNav({ offerId, title }: { offerId: string; title: string }) {

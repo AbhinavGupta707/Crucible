@@ -235,6 +235,67 @@ const COMPANIES = [
   "Sequoia Lane", "Telegraph Studio", "Untitled Studio", "Verse Agency",
 ];
 
+const SIGNALS = [
+  {
+    type: "hiring_sales",
+    summary: "Hiring SDRs while scaling outbound motion",
+    source: "LinkedIn jobs",
+    strength: 86,
+    freshness: 96,
+    intent: 86,
+    icp: 90,
+    whyNow:
+      "They are scaling outbound capacity and likely feeling follow-up leakage before adding process.",
+    angle: "Recover warm leads without adding SDR admin",
+  },
+  {
+    type: "posted_about_problem",
+    summary: "Posted publicly about missed follow-ups",
+    source: "LinkedIn post",
+    strength: 82,
+    freshness: 90,
+    intent: 78,
+    icp: 85,
+    whyNow: "They publicly described the exact follow-up pain this offer solves.",
+    angle: "Fix the missed second follow-up",
+  },
+  {
+    type: "funding_round",
+    summary: "Raised funding and announced GTM expansion",
+    source: "Funding announcement",
+    strength: 74,
+    freshness: 84,
+    intent: 66,
+    icp: 75,
+    whyNow:
+      "They have new capital, but this is a noisy trigger unless follow-up leakage is explicit.",
+    angle: "Protect pipeline quality while scaling",
+  },
+  {
+    type: "competitor_engagement",
+    summary: "Commented on competitor workflow limitations",
+    source: "LinkedIn comments",
+    strength: 69,
+    freshness: 78,
+    intent: 65,
+    icp: 80,
+    whyNow:
+      "They are already thinking about outbound workflow gaps and may compare alternatives.",
+    angle: "Run alongside current sequencer to close the follow-up gap",
+  },
+  {
+    type: "product_launch",
+    summary: "Launching a new agency service line",
+    source: "Company blog",
+    strength: 62,
+    freshness: 72,
+    intent: 58,
+    icp: 70,
+    whyNow: "The signal suggests current GTM change, but relevance should be validated.",
+    angle: "Low-setup follow-up recovery",
+  },
+];
+
 function pick<T>(arr: T[], i: number): T {
   return arr[i % arr.length]!;
 }
@@ -342,9 +403,19 @@ const matchTemplates: Array<{
 
 export const prospects: Prospect[] = Array.from({ length: 24 }, (_, i) => {
   const m = matchTemplates[i % matchTemplates.length]!;
+  const signal = SIGNALS[i % SIGNALS.length]!;
   const first = pick(PROSPECT_FIRST, i);
   const last = pick(PROSPECT_LAST, i + 3);
   const company = pick(COMPANIES, i);
+  const matchConfidence = Math.min(0.95, m.confidence + ((i % 5) - 2) * 0.03);
+  const messageConfidence = 72;
+  const leadPriorityScore = Math.round(
+    0.3 * signal.icp +
+      0.25 * signal.strength +
+      0.2 * signal.freshness +
+      0.15 * (matchConfidence * 100) +
+      0.1 * messageConfidence,
+  );
   return {
     id: `prs_${i + 1}`,
     firstName: first,
@@ -379,11 +450,22 @@ export const prospects: Prospect[] = Array.from({ length: 24 }, (_, i) => {
         : i % 3 === 1
         ? "Uses HubSpot, frustrated with sequencing"
         : "Owner-operator, very lean stack",
+    signalType: signal.type,
+    signalSummary: signal.summary,
+    signalSource: signal.source,
+    signalDate: `2026-05-${String(8 - (i % 7)).padStart(2, "0")}`,
+    signalStrength: signal.strength,
+    signalFreshness: signal.freshness,
+    intentScore: signal.intent,
+    icpFitScore: signal.icp,
+    leadPriorityScore,
+    whyNow: signal.whyNow,
+    recommendedSignalAngle: signal.angle,
     match: {
       archetypeId: m.archetypeId,
       archetypeName: m.archetypeName,
-      confidence: Math.min(0.95, m.confidence + ((i % 5) - 2) * 0.03),
-      matchedSignals: m.signals,
+      confidence: matchConfidence,
+      matchedSignals: [signal.summary, ...m.signals],
       predictedObjection: m.predictedObjection,
       recommendedAngle: m.recommendedAngle,
       riskFlags: m.riskFlags,
@@ -773,6 +855,16 @@ export const nextCohortPlan: NextCohortPlan = {
   ],
   segmentsToDoubleDown: ["Tool-Fatigued Operator v2", "Growth-Focused Founder", "Interested-But-Later"],
   segmentsToPause: ["Wrong-Person Gatekeeper", "Budget-Sensitive Operator (until pricing page lands)"],
+  signalTypesToDoubleDown: ["hiring_sales", "posted_about_problem"],
+  signalTypesToPause: ["funding_round"],
+  signalMemoryUpdates: [
+    "Hiring SDRs worked better than predicted because the signal exposes immediate follow-up leakage.",
+    "Funding-round leads underperformed; funding is too broad unless paired with explicit sales-process pain.",
+  ],
+  messageMemoryUpdates: [
+    "Low-setup language beat AI automation language.",
+    "'We draft, you approve' should replace 'automation platform' in Cohort 2.",
+  ],
   revisedHypothesis:
     "Tool-fatigued operators object to setup time more than to price. Lead with '30-min setup, no rollout' and the 'we draft, you approve' guarantee.",
   successMetric: "Reply rate >= 22% on Tool-Fatigued Operator with non-objection or implementation-objection only.",

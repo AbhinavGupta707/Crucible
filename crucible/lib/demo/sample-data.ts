@@ -26,6 +26,18 @@ export interface RawLead {
   trigger: string;
   website: string;
   linkedin_summary: string;
+  signal_type: string;
+  signal_summary: string;
+  signal_source: string;
+  signal_date: string;
+  signal_strength: string;
+  signal_url: string;
+  intent_score: string;
+  icp_fit_score: string;
+  signal_freshness_score: string;
+  lead_priority_score: string;
+  why_now: string;
+  recommended_angle: string;
 }
 
 export function loadSampleOfferText(): string {
@@ -127,7 +139,7 @@ export function parseLeadsCsv(content: string): RawLead[] {
   const rows = parseCsv(content);
   if (rows.length === 0) return [];
   const header = rows[0].map((h) => h.trim());
-  const expected = [
+  const required = [
     "first_name",
     "last_name",
     "email",
@@ -140,7 +152,7 @@ export function parseLeadsCsv(content: string): RawLead[] {
     "website",
     "linkedin_summary",
   ];
-  for (const col of expected) {
+  for (const col of required) {
     if (!header.includes(col)) {
       throw new Error(`sample-leads.csv missing required column: ${col}`);
     }
@@ -162,6 +174,18 @@ export function parseLeadsCsv(content: string): RawLead[] {
       trigger: lookup("trigger"),
       website: lookup("website"),
       linkedin_summary: lookup("linkedin_summary"),
+      signal_type: lookup("signal_type"),
+      signal_summary: lookup("signal_summary"),
+      signal_source: lookup("signal_source"),
+      signal_date: lookup("signal_date"),
+      signal_strength: lookup("signal_strength"),
+      signal_url: lookup("signal_url"),
+      intent_score: lookup("intent_score"),
+      icp_fit_score: lookup("icp_fit_score"),
+      signal_freshness_score: lookup("signal_freshness_score"),
+      lead_priority_score: lookup("lead_priority_score"),
+      why_now: lookup("why_now"),
+      recommended_angle: lookup("recommended_angle"),
     };
   });
 }

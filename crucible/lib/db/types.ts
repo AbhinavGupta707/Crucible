@@ -47,8 +47,8 @@ export type BuyerArchetype = {
   id: string;
   offerId: string;
   name: string;
-  segment: string;
-  role: string;
+  segment?: string;
+  role?: string;
   activeVersionId: string;
   versions: ArchetypeVersion[];
   createdAt: string;
@@ -68,6 +68,18 @@ export type Prospect = {
   trigger: string;
   website: string;
   linkedinSummary: string;
+  signalType?: string | null;
+  signalSummary?: string | null;
+  signalSource?: string | null;
+  signalDate?: string | null;
+  signalStrength?: number | null;
+  signalUrl?: string | null;
+  intentScore?: number | null;
+  icpFitScore?: number | null;
+  signalFreshnessScore?: number | null;
+  leadPriorityScore?: number | null;
+  whyNow?: string | null;
+  recommendedAngle?: string | null;
   createdAt: string;
 };
 
@@ -81,6 +93,12 @@ export type ProspectMatch = {
   riskFlags: string[];
   predictedObjection: string;
   recommendedAngle: string;
+  predictedOutcome?: string | null;
+  predictedReplyLikelihood?: number | null;
+  predictionConfidence?: number | null;
+  phrasesToUse?: string[];
+  phrasesToAvoid?: string[];
+  signalContribution?: number | null;
   createdAt: string;
 };
 
@@ -176,6 +194,9 @@ export type CalibrationRun = {
   predictionAccuracyByArchetype: Record<string, number>;
   objectionConfusion: Record<string, Record<string, number>>;
   personaUpdateIds: string[];
+  signalPerformanceByType?: Record<string, unknown>;
+  signalMemoryUpdates?: unknown[];
+  messageMemoryUpdates?: unknown[];
   createdAt: string;
 };
 
@@ -188,6 +209,9 @@ export type NextCohortPlan = {
   segmentsToDoubleDown: string[];
   segmentsToPause: string[];
   revisedMessageAngles: string[];
+  signalTypesToDoubleDown?: string[];
+  signalTypesToPause?: string[];
+  reprioritisedLeadIds?: string[];
   newEmailTemplates: { archetypeId: string; subject: string; body: string }[];
   killCriterion: string;
   successMetric: string;

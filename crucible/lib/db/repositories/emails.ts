@@ -1,5 +1,8 @@
-﻿import { Prisma } from "@prisma/client";
+import { Prisma } from "@prisma/client";
+import { nanoid } from "nanoid";
 import { prisma } from "../prisma";
+import { getStore } from "../store";
+import type { OutboundEmail } from "../types";
 
 export type OutboundEmailCreateInput = Prisma.OutboundEmailUncheckedCreateInput;
 
@@ -97,3 +100,46 @@ export async function findEmailByProspectEmailInCohort(args: {
     include: { prospect: true, match: true, reply: true },
   });
 }
+
+function now() {
+  return new Date().toISOString();
+}
+
+type SafeModeEmailInput = Omit<
+  OutboundEmail,
+  "id" | "status" | "approvedAt" | "createdAt"
+> &
+  Partial<Pick<OutboundEmail, "id" | "status" | "approvedAt" | "createdAt">>;
+
+export const emailsRepo = {
+  create(data: SafeModeEmailInput): OutboundEmail {
+    const email: OutboundEmail = {
+      ...data,
+      id: data.id ?? `email_${nanoid(8)}`,
+      status: data.status ?? "draft",
+      approvedAt: data.approvedAt ?? null,
+      createdAt: data.createdAt ?? now(),
+    };
+    getStore().emails.set(email.id, email);
+    return email;
+  },
+
+  findById(emailId: string) {
+    return getStore().emails.get(emailId) ?? null;
+  },
+
+  listByCohort(cohortId: string) {
+    return Array.from(getStore().emails.values()).filter(
+      (email) => email.cohortId === cohortId,
+    );
+  },
+
+  approve(emailId: string) {
+    const email = getStore().emails.get(emailId);
+    if (!email) return null;
+    email.status = "approved";
+    email.approvedAt = now();
+    getStore().emails.set(email.id, email);
+    return email;
+  },
+};

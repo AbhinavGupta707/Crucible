@@ -24,7 +24,7 @@ export async function POST(
     if (prospects.length === 0) {
       return fail(
         ERROR_CODES.PRECONDITION_FAILED,
-        "No prospects exist for this offer; upload CSV first.",
+        "No leads exist for this offer; upload a signal-enriched CSV first.",
         { traceId },
       );
     }
