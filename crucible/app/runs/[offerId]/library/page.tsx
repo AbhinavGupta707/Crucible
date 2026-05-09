@@ -1,14 +1,5 @@
-type Params = Promise<{ offerId: string }>;
+﻿import { ArchetypeLibrary } from "@/components/archetype-library";
 
-export default async function Page({ params }: { params: Params }) {
-  const { offerId } = await params;
-  return (
-    <main className="p-8">
-      <h1 className="text-2xl font-semibold">library</h1>
-      <p className="mt-2 text-sm text-neutral-500">
-        Placeholder for run {offerId}. UI will be implemented by the
-        app-shell workstream.
-      </p>
-    </main>
-  );
+export default function LibraryPage({ params }: { params: { offerId: string } }) {
+  return <ArchetypeLibrary offerId={params.offerId} />;
 }
