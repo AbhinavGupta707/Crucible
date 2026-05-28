@@ -73,28 +73,7 @@ Idea + cold email
 - Next Cohort: shows how the system changes targeting and copy after learning.
 - Demo Safe Mode: deterministic seeded flow keeps the hackathon demo reliable.
 
-## Live Vs Deterministic
 
-Crucible intentionally separates live proof from reliable demo theatre.
-
-Live pieces:
-
-- Gmail OAuth connection.
-- Gmail draft creation.
-- Gmail send to allowlisted test recipients.
-- Apps Script receiver auto-replies.
-- Gmail reply polling.
-
-Deterministic pieces:
-
-- Simulation Lab personas.
-- Signal Radar scoring.
-- Seeded lead and signal data.
-- Cached AI-style outputs.
-- Learning Loop calibration.
-- Next Signal Cohort recommendations.
-
-This gives the best of both worlds: a live integration judges can believe, and a polished end-to-end story that does not collapse if a provider is slow.
 
 ## Tech Stack
 
